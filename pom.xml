@@ -173,6 +173,10 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+         <repository>
+            <id>Hibernate Spatial repo</id>
+            <url>http://www.hibernatespatial.org/repository</url>
+        </repository>
 		<repository>
             <id>cgsrv8.arrc.csiro.au</id>
             <name>AuScope Nexus - PortalRepo</name>
@@ -265,5 +269,27 @@
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
+        <dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>4.3.10.Final</version>
+		</dependency>
+		<dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>4.3.10.FINAL</version>
+        </dependency>		
+		<dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+            <version>4.3</version>
+        </dependency>
+					
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.4-1201-jdbc41</version>
+		</dependency>
+			
     </dependencies>
 </project>
