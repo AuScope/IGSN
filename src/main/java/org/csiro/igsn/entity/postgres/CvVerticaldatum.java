@@ -4,7 +4,10 @@ package org.csiro.igsn.entity.postgres;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -34,6 +37,8 @@ public class CvVerticaldatum implements java.io.Serializable {
 
 	@Id
 	@Column(name = "vertical_datum_id", unique = true, nullable = false)
+	@SequenceGenerator(name="cv_verticaldatum_vertical_datum_id_seq",sequenceName="cv_verticaldatum_vertical_datum_id_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="cv_verticaldatum_vertical_datum_id_seq")
 	public int getVerticalDatumId() {
 		return this.verticalDatumId;
 	}

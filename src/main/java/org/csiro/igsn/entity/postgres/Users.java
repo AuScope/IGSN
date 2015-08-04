@@ -4,7 +4,10 @@ package org.csiro.igsn.entity.postgres;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -30,17 +33,17 @@ public class Users implements java.io.Serializable {
 	public Users() {
 	}
 
-	public Users(int sourceId, String organization, String contactName) {
-		this.sourceId = sourceId;
+	public Users(String organization, String contactName) {
+		
 		this.organization = organization;
 		this.contactName = contactName;
 	}
 
-	public Users(int sourceId, String organization, String sourceDescription,
+	public Users(String organization, String sourceDescription,
 			String sourceLink, String contactName, String phone, String email,
 			String address, String city, String state, String zipCode,
 			Integer metadataId) {
-		this.sourceId = sourceId;
+		
 		this.organization = organization;
 		this.sourceDescription = sourceDescription;
 		this.sourceLink = sourceLink;
@@ -56,6 +59,8 @@ public class Users implements java.io.Serializable {
 
 	@Id
 	@Column(name = "source_id", unique = true, nullable = false)
+	@SequenceGenerator(name="users_source_id_seq",sequenceName="users_source_id_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="users_source_id_seq")
 	public int getSourceId() {
 		return this.sourceId;
 	}

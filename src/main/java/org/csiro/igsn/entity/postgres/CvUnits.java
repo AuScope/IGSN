@@ -4,11 +4,15 @@ package org.csiro.igsn.entity.postgres;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -52,6 +56,8 @@ public class CvUnits implements java.io.Serializable {
 
 	@Id
 	@Column(name = "units_id", unique = true, nullable = false)
+	@SequenceGenerator(name="cv_units_units_id_seq",sequenceName="cv_units_units_id_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="cv_units_units_id_seq")
 	public int getUnitsId() {
 		return this.unitsId;
 	}

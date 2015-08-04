@@ -5,11 +5,15 @@ package org.csiro.igsn.entity.postgres;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -49,6 +53,8 @@ public class Prefix implements java.io.Serializable {
 
 	@Id
 	@Column(name = "object_id", unique = true, nullable = false)
+	@SequenceGenerator(name="prefix_object_id_seq",sequenceName="prefix_object_id_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="prefix_object_id_seq")
 	public int getObjectId() {
 		return this.objectId;
 	}
