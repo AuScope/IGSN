@@ -34,7 +34,7 @@ include  src/main/resources/hibernate.cfg.xml for development
         <property name="hibernate.default_schema">xxxx</property>       
     </session-factory>
 </hibernate-configuration>
-````
+```
 
 include src/main/resources/META-INF/persistence.xml 
 ```
