@@ -18,7 +18,7 @@ make sure your eclipse is running on java 8 as well. For more tips and tricks vi
 https://twiki.auscope.org/wiki/Grid/AuscopePortalDevelopmentEnvironmentSetUp26022010
 
 include  src/main/resources/hibernate.cfg.xml for development
-
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-configuration PUBLIC
 		"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
@@ -34,10 +34,10 @@ include  src/main/resources/hibernate.cfg.xml for development
         <property name="hibernate.default_schema">xxxx</property>       
     </session-factory>
 </hibernate-configuration>
-
+````
 
 include src/main/resources/META-INF/persistence.xml 
-
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -66,3 +66,4 @@ include src/main/resources/META-INF/persistence.xml
        </properties>
     </persistence-unit>
 </persistence>
+```
