@@ -19,7 +19,6 @@ https://twiki.auscope.org/wiki/Grid/AuscopePortalDevelopmentEnvironmentSetUp2602
 
 include  src/main/resources/hibernate.cfg.xml for development
 
-```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-configuration PUBLIC
 		"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
@@ -35,12 +34,10 @@ include  src/main/resources/hibernate.cfg.xml for development
         <property name="hibernate.default_schema">xxxx</property>       
     </session-factory>
 </hibernate-configuration>
-```
 
 
 include src/main/resources/META-INF/persistence.xml 
 
-```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -50,19 +47,22 @@ include src/main/resources/META-INF/persistence.xml
        <properties>
            <property name="hibernate.dialect" value="org.hibernate.spatial.dialect.postgis.PostgisDialect"/>
 
-  		   <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
+           <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
            <property name="hibernate.connection.url" value="jdbc:postgresql://xxx.example:8888/xxxx"/>
            <property name="hibernate.connection.username" value="xxxx"/>
            <property name="hibernate.connection.password" value="xxxx"/>
            <property name="hibernate.default_schema" value="xxxx"/>   
            <property name="hibernate.connection.pool_size" value="5"/>
-  		   <property name="hibernate.show_sql" value="true"/>
+
+           <property name="hibernate.show_sql" value="true"/>
            <property name="hibernate.format_sql" value="true"/>
-		   <property name="hibernate.max_fetch_depth" value="5"/>
+
+           <property name="hibernate.max_fetch_depth" value="5"/>
+
 			<!-- setting this to update/validate may be useful in the future which will update db schema based on annotations-->
-		   <property name="hibernate.hbm2ddl.auto" value="update"/>             																
+           <property name="hibernate.hbm2ddl.auto" value="update"/>  
+           																
+
        </properties>
     </persistence-unit>
 </persistence>
-```
-
