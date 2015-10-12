@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -96,7 +98,7 @@ public class Users implements java.io.Serializable {
 		this.sourceLink = sourceLink;
 	}
 
-	@Column(name = "contact_name", nullable = false)
+	@Column(name = "contact_name", unique = true, nullable = false)
 	public String getContactName() {
 		return this.contactName;
 	}
