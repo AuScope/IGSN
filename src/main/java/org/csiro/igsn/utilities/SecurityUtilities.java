@@ -1,8 +1,8 @@
-package org.csiro.rockstore.utilities;
+package org.csiro.igsn.utilities;
 
 import java.security.Principal;
 
-import org.csiro.rockstore.security.LdapUser;
+import org.csiro.igsn.security.LdapUser;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 public class SecurityUtilities {

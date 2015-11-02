@@ -1,5 +1,6 @@
 package org.csiro.igsn.service;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +56,8 @@ public class SampleEntityService {
 
 	public Samples.Sample SampleToXml(Sample sampleEntity){
 		
+		Calendar cal = Calendar.getInstance();
+		
 		Samples.Sample sampleXml = new Samples.Sample();
 		Samples.Sample.SampleNumber sampleNumberXml = new Samples.Sample.SampleNumber();
 		
@@ -75,8 +78,9 @@ public class SampleEntityService {
 		
 		//VT: Log element
 		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
-		logElement.setValue("log value dunno where");
-		logElement.setTimeStamp((new Date()).toString());					
+		logElement.setValue("log value dunno where");		
+		cal.setTime(new Date());				  
+		logElement.setTimeStamp(String.valueOf(cal.get(Calendar.YEAR)));					
 		logElement.setEvent(EventType.SUBMITTED);		
 		sampleXml.setLogElement(logElement);
 		
@@ -126,7 +130,8 @@ public class SampleEntityService {
 			
 			//VT Set time - Linked to database curation start time
 			Curator.CurationTime curationTime= new Curator.CurationTime();
-			curationTime.setTimeInstant(sc.getCurationstart().toString());			
+			cal.setTime(sc.getCurationstart());
+			curationTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));			
 			c.setCurationTime(curationTime);
 		
 			//VT Set curator
@@ -167,7 +172,7 @@ public class SampleEntityService {
 			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt();
 			wkt.setSrs(sampleFeature.getFeaturesrs());
 			wkt.setSpatialType(SpatialType.POINT);
-			wkt.setValue("TODO"+sampleFeature.getFeaturegeom());			
+			wkt.setValue(sampleFeature.getFeaturegeom().getCoordinate().y + " " + sampleFeature.getFeaturegeom().getCoordinate().x);			
 			featureLocation.setWkt(wkt);
 			
 			featureLocation.setLocality(sampleFeature.getFeaturelocality());
@@ -196,15 +201,16 @@ public class SampleEntityService {
 		Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt();
 		wkt.setSrs(sampleEntity.getSamplinglocsrs());
 		wkt.setSpatialType(SpatialType.POINT);
-		wkt.setValue("TODO"+sampleEntity.getSamplinglocgeom());
+		wkt.setValue(sampleEntity.getSamplinglocgeom().getCoordinate().y + " " + sampleEntity.getSamplinglocgeom().getCoordinate().x);
 		samplingLocation.setWkt(wkt);
 				
 		sampleXml.setSamplingLocation(samplingLocation);
 				
 		sampleXml.setSamplingMethod(sampleEntity.getCvSamplingmethod().getMethodidentifier());
 		
-		Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();
-		samplingTime.setTimeInstant(sampleEntity.getSamplingstart().toString());
+		Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
+		cal.setTime(sampleEntity.getSamplingstart());			    
+		samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
 		sampleXml.setSamplingTime(samplingTime);
 		
 		return sampleXml;

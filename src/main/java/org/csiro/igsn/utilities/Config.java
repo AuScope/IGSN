@@ -1,4 +1,4 @@
-package org.csiro.rockstore.utilities;
+package org.csiro.igsn.utilities;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

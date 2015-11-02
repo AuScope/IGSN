@@ -59,7 +59,7 @@ public class Sampleresources implements java.io.Serializable {
 		this.sampleresourcesid = sampleresourcesid;
 	}
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "resourceidentifertype")
 	public CvRelatedIdentifiertype getCvRelatedIdentifiertype() {
 		return this.cvRelatedIdentifiertype;
@@ -89,7 +89,7 @@ public class Sampleresources implements java.io.Serializable {
 		this.resourceidentifier = resourceidentifier;
 	}
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "resourcerelationtype")
 	public CvResourceRelationshiptype getCvResourceRelationshiptype() {
 		return this.cvResourceRelationshiptype;

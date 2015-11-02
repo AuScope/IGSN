@@ -1,7 +1,7 @@
-package org.csiro.rockstore.server;
+package org.csiro.igsn.server;
 
-import org.csiro.rockstore.security.SecurityConfig;
-import org.csiro.rockstore.security.UserDetailsContextMapperImpl;
+import org.csiro.igsn.security.SecurityConfig;
+import org.csiro.igsn.security.UserDetailsContextMapperImpl;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 
 public class SecurityWebApplicationInit

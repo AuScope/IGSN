@@ -1,4 +1,4 @@
-package org.csiro.rockstore.security;
+package org.csiro.igsn.security;
 import java.util.Collection;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.GrantedAuthority;

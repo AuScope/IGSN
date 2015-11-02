@@ -1,4 +1,4 @@
-package org.csiro.rockstore.security;
+package org.csiro.igsn.security;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.csiro.rockstore.utilities.Config;
+import org.csiro.igsn.utilities.Config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.support.LdapContextSource;

@@ -5,5 +5,5 @@
 // Generated on: 2015.10.27 at 10:22:58 AM AWST 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://igsn.org/schema/kernel-v.1.0", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@javax.xml.bind.annotation.XmlSchema(namespace = "http://igsn.org/schema/kernel-v.1.0", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)								    								    
 package org.csiro.igsn.bindings.allocation2_0;
