@@ -4,11 +4,14 @@ package org.csiro.igsn.entity.postgres2_0;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -17,6 +20,12 @@ import javax.persistence.UniqueConstraint;
  */
 @Entity
 @Table(name = "cv_sampletype", uniqueConstraints = @UniqueConstraint(columnNames = "sampletypeidentifier"))
+@NamedQueries({
+	@NamedQuery(
+			name="CvSampletype.searchBySampleType",
+		    query="SELECT r FROM CvSampletype r where r.sampletypeidentifier = :sampletypeidentifier"
+	)
+})	
 public class CvSampletype implements java.io.Serializable {
 
 	private int sampletypeid;

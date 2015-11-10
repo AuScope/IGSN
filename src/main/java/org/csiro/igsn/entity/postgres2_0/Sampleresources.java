@@ -3,12 +3,16 @@ package org.csiro.igsn.entity.postgres2_0;
 // Generated 27/10/2015 10:58:13 AM by Hibernate Tools 4.3.1
 
 import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -30,18 +34,17 @@ public class Sampleresources implements java.io.Serializable {
 	public Sampleresources() {
 	}
 
-	public Sampleresources(int sampleresourcesid, Sample sample,
+	public Sampleresources(Sample sample,
 			String resourceidentifier) {
-		this.sampleresourcesid = sampleresourcesid;
+		
 		this.sample = sample;
 		this.resourceidentifier = resourceidentifier;
 	}
 
-	public Sampleresources(int sampleresourcesid,
-			CvRelatedIdentifiertype cvRelatedIdentifiertype, Sample sample,
+	public Sampleresources(CvRelatedIdentifiertype cvRelatedIdentifiertype, Sample sample,
 			String resourceidentifier, CvResourceRelationshiptype cvResourceRelationshiptype,
 			Date addeddate) {
-		this.sampleresourcesid = sampleresourcesid;
+		
 		this.cvRelatedIdentifiertype = cvRelatedIdentifiertype;
 		this.sample = sample;
 		this.resourceidentifier = resourceidentifier;
@@ -51,6 +54,8 @@ public class Sampleresources implements java.io.Serializable {
 
 	@Id
 	@Column(name = "sampleresourcesid", unique = true, nullable = false)
+	@SequenceGenerator(name="sampleresources_sampleresourcesid_seq",sequenceName="sampleresources_sampleresourcesid_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="sampleresources_sampleresourcesid_seq")
 	public int getSampleresourcesid() {
 		return this.sampleresourcesid;
 	}

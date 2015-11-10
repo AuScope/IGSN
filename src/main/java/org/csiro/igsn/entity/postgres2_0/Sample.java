@@ -11,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -21,6 +22,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -71,6 +73,7 @@ public class Sample implements java.io.Serializable {
 	private Date created;
 	private Date modified;
 	private Boolean ispublic;
+	private String elevationUnits;
 	private Set<CvSampletype> cvSampletypes = new HashSet<CvSampletype>(0);
 	private Set<Samplecuration> samplecurations = new HashSet<Samplecuration>(0);
 	private Set<Samplingfeatures> samplingfeatures = new HashSet<Samplingfeatures>(
@@ -110,7 +113,8 @@ public class Sample implements java.io.Serializable {
 			Set<Samplingfeatures> samplingfeatures,
 			Set<SampleCollector> sampleCollectors,
 			Set<Sampleresources> sampleresourceses,
-			Set<CvSamplematerial> cvSamplematerials) {
+			Set<CvSamplematerial> cvSamplematerials,
+			String elevationUnits) {
 		this.cvSamplingmethod = cvSamplingmethod;
 		this.registrant = registrant;
 		this.statusByPhysicalsamplestatus = statusByPhysicalsamplestatus;
@@ -141,12 +145,13 @@ public class Sample implements java.io.Serializable {
 		this.sampleCollectors = sampleCollectors;
 		this.sampleresourceses = sampleresourceses;
 		this.cvSamplematerials = cvSamplematerials;
+		this.elevationUnits = elevationUnits;
 	}
 
-	@GenericGenerator(name = "generator", strategy = "foreign", parameters = @Parameter(name = "property", value = "registrant"))
 	@Id
-	@GeneratedValue(generator = "generator")
 	@Column(name = "sampleid", unique = true, nullable = false)
+	@SequenceGenerator(name="sample_sampleid_seq",sequenceName="sample_sampleid_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="sample_sampleid_seq")
 	public int getSampleid() {
 		return this.sampleid;
 	}
@@ -440,6 +445,15 @@ public class Sample implements java.io.Serializable {
 
 	public void setCvSamplematerials(Set<CvSamplematerial> cvSamplematerials) {
 		this.cvSamplematerials = cvSamplematerials;
+	}
+	
+	@Column(name = "elevation_units", length = 30)
+	public String getElevationUnits() {
+		return this.elevationUnits;
+	}
+
+	public void setElevationUnits(String elevationUnits) {
+		this.elevationUnits = elevationUnits;
 	}
 
 }

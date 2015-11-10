@@ -9,10 +9,13 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
@@ -35,21 +38,22 @@ public class Samplingfeatures implements java.io.Serializable {
 	private String elevation;
 	private String verticaldatum;
 	private String featurelocality;
+	private String elevationUnits;
 	
 
 	public Samplingfeatures() {
 	}
 
-	public Samplingfeatures(int featureid, String featurename) {
+	public Samplingfeatures(String featurename) {
 		this.featureid = featureid;
 		this.featurename = featurename;
 	}
 
-	public Samplingfeatures(int featureid, CvSamplingfeature cvSamplingfeature,
+	public Samplingfeatures( CvSamplingfeature cvSamplingfeature,
 			String featurename, Point featuregeom, String featuresrs,
-			String elevation, String verticaldatum, String featurelocality
-			) {
-		this.featureid = featureid;
+			String elevation, String verticaldatum, String featurelocality,
+			String elevationUnits) {
+		
 		this.cvSamplingfeature = cvSamplingfeature;
 		this.featurename = featurename;
 		this.featuregeom = featuregeom;
@@ -57,11 +61,13 @@ public class Samplingfeatures implements java.io.Serializable {
 		this.elevation = elevation;
 		this.verticaldatum = verticaldatum;
 		this.featurelocality = featurelocality;
-		
+		this.elevationUnits = elevationUnits;
 	}
 
 	@Id
 	@Column(name = "featureid", unique = true, nullable = false)
+	@SequenceGenerator(name="samplingfeatures_featureid_seq",sequenceName="samplingfeatures_featureid_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="samplingfeatures_featureid_seq")
 	public int getFeatureid() {
 		return this.featureid;
 	}
@@ -134,6 +140,15 @@ public class Samplingfeatures implements java.io.Serializable {
 
 	public void setFeaturelocality(String featurelocality) {
 		this.featurelocality = featurelocality;
+	}
+	
+	@Column(name = "elevation_units", length = 30)
+	public String getElevationUnits() {
+		return this.elevationUnits;
+	}
+
+	public void setElevationUnits(String elevationUnits) {
+		this.elevationUnits = elevationUnits;
 	}
 
 

@@ -1,41 +1,55 @@
 package org.csiro.igsn.service;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
-import org.csiro.igsn.bindings.allocation2_0.EventType;
 import org.csiro.igsn.bindings.allocation2_0.IdentifierType;
 import org.csiro.igsn.bindings.allocation2_0.ObjectFactory;
 import org.csiro.igsn.bindings.allocation2_0.RelatedIdentifierType;
 import org.csiro.igsn.bindings.allocation2_0.RelationType;
 import org.csiro.igsn.bindings.allocation2_0.Samples;
-import org.csiro.igsn.bindings.allocation2_0.SpatialType;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.RelatedResources.RelatedResourceIdentifier;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors.Collector;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curator;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.Feature;
+import org.csiro.igsn.bindings.allocation2_0.SpatialType;
+import org.csiro.igsn.entity.postgres2_0.CvRelatedIdentifiertype;
+import org.csiro.igsn.entity.postgres2_0.CvResourceRelationshiptype;
 import org.csiro.igsn.entity.postgres2_0.CvSamplematerial;
 import org.csiro.igsn.entity.postgres2_0.CvSampletype;
-import org.csiro.igsn.entity.postgres2_0.Prefix;
-import org.csiro.igsn.entity.postgres2_0.Registrant;
+import org.csiro.igsn.entity.postgres2_0.CvSamplingfeature;
+import org.csiro.igsn.entity.postgres2_0.CvSamplingmethod;
 import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.entity.postgres2_0.SampleCollector;
 import org.csiro.igsn.entity.postgres2_0.Samplecuration;
 import org.csiro.igsn.entity.postgres2_0.Sampleresources;
 import org.csiro.igsn.entity.postgres2_0.Samplingfeatures;
+import org.csiro.igsn.entity.postgres2_0.Status;
+import org.csiro.igsn.utilities.SpatialUtilities;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.vividsolutions.jts.geom.Point;
+
 @Service
 public class SampleEntityService {
-
 	
-
+	ControlledValueEntityService controlledValueEntityService;
+	
+	@Autowired
+	public SampleEntityService(ControlledValueEntityService controlledValueEntityService){
+		this.controlledValueEntityService = controlledValueEntityService;
+	}
 
 	public ResponseEntity<? extends Object> getSampleMetadataByIGSN(String igsn) {
 		
@@ -76,13 +90,13 @@ public class SampleEntityService {
 		classification.setValue(sampleEntity.getClassification());		
 		sampleXml.setClassification(classification);
 		
-		//VT: Log element
-		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
-		logElement.setValue("log value dunno where");		
-		cal.setTime(new Date());				  
-		logElement.setTimeStamp(String.valueOf(cal.get(Calendar.YEAR)));					
-		logElement.setEvent(EventType.SUBMITTED);		
-		sampleXml.setLogElement(logElement);
+		//VT: Log element - Not Needed
+//		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
+//		logElement.setValue("log value dunno where");		
+//		cal.setTime(new Date());				  
+//		logElement.setTimeStamp(String.valueOf(cal.get(Calendar.YEAR)));					
+//		logElement.setEvent(EventType.SUBMITTED);		
+//		sampleXml.setLogElement(logElement);
 		
 		//VT: Set Material Type
 		Samples.Sample.MaterialTypes materialType = new Samples.Sample.MaterialTypes();
@@ -164,7 +178,7 @@ public class SampleEntityService {
 			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation();
 			//VT: elevation
 			elevation.setDatum(sampleFeature.getVerticaldatum());
-			elevation.setUnits("missing");
+			elevation.setUnits(sampleFeature.getElevationUnits());
 			elevation.setValue(sampleFeature.getElevation());
 			featureLocation.setElevation(elevation);
 			
@@ -192,7 +206,7 @@ public class SampleEntityService {
 		Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation();
 		//VT: sample elevation
 		elevation.setDatum(sampleEntity.getVerticaldatum());
-		elevation.setUnits("missing");
+		elevation.setUnits(sampleEntity.getElevationUnits());
 		elevation.setValue(sampleEntity.getElevation());		
 		samplingLocation.setElevation(elevation);
 		
@@ -233,7 +247,125 @@ public class SampleEntityService {
 			throw e;
 		}
 	}
+
+
+	public void insertSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user) {
+		
+		EntityManager em = JPAEntityManager.createEntityManager();
+		Sample sampleEntity = new Sample();
+		try{
+			em.getTransaction().begin();
+			populateSample(sampleXml,user,em,sampleEntity);						
+			em.flush();
+			em.getTransaction().commit();
+		    em.close();
+		}catch(Exception e){
+			em.getTransaction().rollback();
+			em.close();
+		}
+
+	}
 	
+	private void populateSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user, EntityManager em,Sample sampleEntity) throws ParseException{
+		DateFormat df =new SimpleDateFormat("yyyy");
+		
+		//VT:Sampling Method
+		CvSamplingmethod samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod());
+		if(samplingMethod == null){
+			samplingMethod = new CvSamplingmethod(sampleXml.getSamplingMethod(),"");
+			em.persist(samplingMethod);
+		}
+		sampleEntity.setCvSamplingmethod(samplingMethod);
+		sampleEntity.setSamplename(sampleXml.getSampleName());
+		sampleEntity.setOthername(sampleXml.getOtherNames().getOtherName().get(0));//VT database only support 1 other name;
+		sampleEntity.setIgsn(sampleXml.getSampleNumber().getValue());
+		sampleEntity.setLandingpage(sampleXml.getLandingPage());
+		sampleEntity.setClassification(sampleXml.getClassification().getValue());
+		sampleEntity.setClassificationidentifier(sampleXml.getClassification().getClassificationIdentifier());
+		sampleEntity.setPurpose(sampleXml.getPurpose());
+		
+		String[] samplingLocationStrPoint = sampleXml.getSamplingLocation().getWkt().getValue().split(" ");
+		Point samplinglocgeom = (Point)(SpatialUtilities.wktToGeometry(samplingLocationStrPoint[0], samplingLocationStrPoint[1]));		
+		sampleEntity.setSamplinglocgeom(samplinglocgeom);
+		sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getWkt().getSrs());
+		sampleEntity.setElevation(sampleXml.getSamplingLocation().getElevation().getValue());
+		sampleEntity.setVerticaldatum(sampleXml.getSamplingLocation().getElevation().getDatum());
+		sampleEntity.setElevationUnits(sampleXml.getSamplingLocation().getElevation().getUnits());
+		sampleEntity.setLocality(sampleXml.getSamplingLocation().getLocality());
+		sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getTimeInstant()));		
+		sampleEntity.setSamplingcampaign(sampleXml.getSamplingCampaign());
+		sampleEntity.setComment(sampleXml.getComments());
+				
+		//VT:Registrant
+		sampleEntity.setRegistrant(controlledValueEntityService.searchRegistrant(user));
+		
+		sampleEntity.setCreated(new Date());
+		sampleEntity.setModified(new Date());
+		sampleEntity.setIspublic(sampleXml.isIsPublic());
+		
+		//VT: Sample types
+		Set<CvSampletype> cvSampletypes = new HashSet<CvSampletype>();
+		for(String sampleType:sampleXml.getSampleTypes().getSampleType()){
+			cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleType));
+		}
+		if(!cvSampletypes.isEmpty()){
+			sampleEntity.setCvSampletypes(cvSampletypes);
+		}
+		
+		//VT:Curator
+		Set<Samplecuration> samplecurations=new HashSet<Samplecuration>();
+		for(Curator curator:sampleXml.getSampleCuration().getCurator()){
+			samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCuratorName(),df.parse(curator.getCurationTime().getTimeInstant()),null,""));
+		}
+		if(!samplecurations.isEmpty()){
+			sampleEntity.setSamplecurations(samplecurations);			
+		}
+		
+		//VT: SamplingFeatures
+		Set<Samplingfeatures> samplingfeatures = new HashSet<Samplingfeatures>();
+		for(Feature feature:sampleXml.getSamplingFeatures().getFeature()){
+			CvSamplingfeature cvSamplingfeature = controlledValueEntityService.searchSamplingfeatureByIdentifier(feature.getFeatureType());
+			String[] featureLocStrPoint = feature.getFeatureLocation().getWkt().getValue().split(" ");
+			Point featureLoc = (Point)(SpatialUtilities.wktToGeometry(featureLocStrPoint[0], featureLocStrPoint[1]));	
+			samplingfeatures.add(new Samplingfeatures(cvSamplingfeature,feature.getFeatureName(),featureLoc,feature.getFeatureLocation().getWkt().getSrs(),feature.getFeatureLocation().getElevation().getValue(),
+					feature.getFeatureLocation().getElevation().getDatum(),feature.getFeatureLocation().getLocality(),feature.getFeatureLocation().getElevation().getUnits()));
+		}
+		if(!samplingfeatures.isEmpty()){
+			sampleEntity.setSamplingfeatures(samplingfeatures);
+		}
+		
+		//VT:SampleCollector
+		Set<SampleCollector> sampleCollectors = new HashSet<SampleCollector>();
+		for(Collector sampleCollector:sampleXml.getSampleCollectors().getCollector()){
+			sampleCollectors.add(new SampleCollector(sampleEntity,sampleCollector.getValue(),sampleCollector.getCollectorIdentifier()));
+		}
+		if(!sampleCollectors.isEmpty()){
+			sampleEntity.setSampleCollectors(sampleCollectors);
+		}
+		
+		
+		//VT:SampleResource
+		Set<Sampleresources> sampleresourceses = new HashSet<Sampleresources>();
+		for(RelatedResourceIdentifier resource:sampleXml.getRelatedResources().getRelatedResourceIdentifier()){
+			CvRelatedIdentifiertype cvRelatedIdentifiertype=controlledValueEntityService.searchRelatedIdentifier(resource.getRelatedIdentifierType().value());
+			CvResourceRelationshiptype cvResourceRelationshiptype = controlledValueEntityService.searchByRelationshipType(resource.getRelationType().value());
+			sampleresourceses.add(new Sampleresources(cvRelatedIdentifiertype,sampleEntity,resource.getValue(),cvResourceRelationshiptype,new Date()));
+		}
+		if(!sampleresourceses.isEmpty()){
+			sampleEntity.setSampleresourceses(sampleresourceses);			
+		}
+		
+		//VT:SampleMaterial
+		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();
+		for(String sampleMaterial:sampleXml.getMaterialTypes().getMaterialType()){
+			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleMaterial));
+		}
+		if(!cvSamplematerials.isEmpty()){
+			sampleEntity.setCvSamplematerials(cvSamplematerials);
+		}
+	}
+	
+
 	
 	
 }

@@ -115,6 +115,21 @@ public class Prefix implements java.io.Serializable {
 	public void setRegistrants(Set<Registrant> registrants) {
 		this.registrants = registrants;
 	}
+	
+	@Override
+	public boolean equals(Object o){
+		if (o == null) return false;
+	    if (o == this) return true;
+		if(o instanceof Prefix){
+			return this.equals(o);
+		}
+		
+		//VT: bit of a hack to make things easier when we do things like list.contains(blahString);
+		if(o instanceof String){
+			return this.prefix.equals((String)o);
+		}
+		return false;
+	}
 
 //	@JsonIgnore
 //	@ManyToMany(fetch = FetchType.LAZY)

@@ -4,10 +4,13 @@ package org.csiro.igsn.entity.postgres2_0;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -16,6 +19,12 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "cv_resource_relationshiptype")
+@NamedQueries({
+	@NamedQuery(
+			name="CvResourceRelationshiptype.searchByRelationshipType",
+		    query="SELECT r FROM CvResourceRelationshiptype r where r.relationshipType = :relationshipType"
+	)
+})	
 public class CvResourceRelationshiptype implements java.io.Serializable {
 
 	private int id;

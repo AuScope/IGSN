@@ -84,6 +84,20 @@ public class PrefixEntityService {
 		}
 	}
 	
+	public Set<Prefix> searchByUser(String user){
+		try{
+			EntityManager em = JPAEntityManager.createEntityManager();
+			Registrant registrant = em.createNamedQuery("Registrant.searchByUsername",Registrant.class)
+					.setParameter("username", user)
+					.getSingleResult();
+			 em.close();			 
+			 return registrant.getPrefixes();
+		}catch(NoResultException e){
+			return null;
+		}catch(Exception e){
+			throw e;
+		}
+	}
 	
 	
 }

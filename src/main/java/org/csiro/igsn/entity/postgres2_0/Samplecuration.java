@@ -3,12 +3,16 @@ package org.csiro.igsn.entity.postgres2_0;
 // Generated 27/10/2015 10:58:13 AM by Hibernate Tools 4.3.1
 
 import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -31,16 +35,16 @@ public class Samplecuration implements java.io.Serializable {
 	public Samplecuration() {
 	}
 
-	public Samplecuration(int samplecurationid, Sample sample, String curator) {
-		this.samplecurationid = samplecurationid;
+	public Samplecuration(Sample sample, String curator) {
+		
 		this.sample = sample;
 		this.curator = curator;
 	}
 
-	public Samplecuration(int samplecurationid, Sample sample,
+	public Samplecuration(Sample sample,
 			String curationlocation, String curator, Date curationstart,
 			Date curationend, String comments) {
-		this.samplecurationid = samplecurationid;
+		
 		this.sample = sample;
 		this.curationlocation = curationlocation;
 		this.curator = curator;
@@ -51,6 +55,8 @@ public class Samplecuration implements java.io.Serializable {
 
 	@Id
 	@Column(name = "samplecurationid", unique = true, nullable = false)
+	@SequenceGenerator(name="samplecuration_samplecurationid_seq",sequenceName="samplecuration_samplecurationid_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="samplecuration_samplecurationid_seq")
 	public int getSamplecurationid() {
 		return this.samplecurationid;
 	}

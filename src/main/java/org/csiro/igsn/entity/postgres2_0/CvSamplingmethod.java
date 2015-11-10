@@ -4,11 +4,17 @@ package org.csiro.igsn.entity.postgres2_0;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
@@ -16,6 +22,12 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "cv_samplingmethod")
+@NamedQueries({
+	@NamedQuery(
+			name="CvSamplingmethod.search",
+		    query="SELECT s FROM CvSamplingmethod s where s.methodidentifier = :methodidentifier"
+	)
+})	
 public class CvSamplingmethod implements java.io.Serializable {
 
 	private int methodid;
@@ -26,16 +38,15 @@ public class CvSamplingmethod implements java.io.Serializable {
 	public CvSamplingmethod() {
 	}
 
-	public CvSamplingmethod(int methodid, String methodidentifier,
+	public CvSamplingmethod(String methodidentifier,
 			String methoddescription) {
-		this.methodid = methodid;
+		
 		this.methodidentifier = methodidentifier;
 		this.methoddescription = methoddescription;
 	}
 
-	public CvSamplingmethod(int methodid, String methodidentifier,
-			String methoddescription, Set<Sample> samples) {
-		this.methodid = methodid;
+	public CvSamplingmethod(String methodidentifier,
+			String methoddescription, Set<Sample> samples) {		
 		this.methodidentifier = methodidentifier;
 		this.methoddescription = methoddescription;
 		this.samples = samples;
@@ -43,6 +54,8 @@ public class CvSamplingmethod implements java.io.Serializable {
 
 	@Id
 	@Column(name = "methodid", unique = true, nullable = false)
+	@SequenceGenerator(name="cv_samplingmethod_methodid_seq",sequenceName="cv_samplingmethod_methodid_seq", allocationSize=1)
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="cv_samplingmethod_methodid_seq")
 	public int getMethodid() {
 		return this.methodid;
 	}

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.apache.log4j.Logger;
 
 @RestController
-@RequestMapping(value = "/metadata")//http://localhost:8080/CSIRO-IGSN/rest/employees
+@RequestMapping(value = "/metadata")
 public class MetaDataCtrl {
 	
 	static final Logger log = Logger.getLogger(MetaDataCtrl.class);

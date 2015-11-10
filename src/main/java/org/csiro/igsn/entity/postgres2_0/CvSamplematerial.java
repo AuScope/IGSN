@@ -4,11 +4,14 @@ package org.csiro.igsn.entity.postgres2_0;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
@@ -16,6 +19,12 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "cv_samplematerial")
+@NamedQueries({
+	@NamedQuery(
+			name="CvSamplematerial.searchByMaterialidentifier",
+		    query="SELECT r FROM CvSamplematerial r where r.materialidentifier = :materialidentifier"
+	)
+})	
 public class CvSamplematerial implements java.io.Serializable {
 
 	private int materialid;
