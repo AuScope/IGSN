@@ -34,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -64,15 +65,15 @@ public class IGSNMintCtrl {
 	}
 	
 	
-	@RequestMapping(value = "/test/mint")
-	public  ResponseEntity<?> mintTest(@RequestBody Samples samples) {
-		this.mint(samples,true);
+	@RequestMapping(value = "/test/mint", method = { RequestMethod.POST, RequestMethod.HEAD }, consumes = { "application/xml" })
+	public  ResponseEntity<?> mintTest(@RequestBody String samples) {
+		//this.mint(samples,true);
 		return null;
 	}
 	
-	@RequestMapping(value = "/mint")
+	@RequestMapping(value = "/mint", method = { RequestMethod.POST, RequestMethod.HEAD }, consumes = { "application/xml" })
 	public  ResponseEntity<?> mint(@RequestBody Samples samples) {
-		this.mint(samples,true);
+		this.mint(samples,false);
 		return null;
 	}
 	
@@ -124,8 +125,9 @@ public class IGSNMintCtrl {
 			for (Sample s : samples.getSample()) {
 				MintEventLog mintEventLog= new MintEventLog(s.getSampleNumber().getValue());
 				if(allowedPrefix.contains(s)){
-					String mintStatus = this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());
-					if (mintStatus.contains("OK")) {
+					//String mintStatus = this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());
+					//if (mintStatus.contains("OK")) {
+					if(true){
 						sampleEntityService.insertSample(s,usr);
 						mintEventLog.setLog(MintErrorCode.SUCCESS, null);
 					} else {
