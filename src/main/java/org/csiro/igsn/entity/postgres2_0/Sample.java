@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -28,9 +29,12 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+
+
 
 
 
@@ -70,8 +74,7 @@ public class Sample implements java.io.Serializable {
 	private Date samplingstart;
 	private Date samplingend;
 	private String samplingcampaign;
-	private String comment;
-	private int registrant_1;
+	private String comment;	
 	private Date created;
 	private Date modified;
 	private Boolean ispublic;
@@ -91,12 +94,11 @@ public class Sample implements java.io.Serializable {
 	}
 
 	public Sample(Registrant registrant, String samplename, String igsn,
-			String landingpage, int registrant_1, Date created) {
+			String landingpage, Date created) {
 		this.registrant = registrant;
 		this.samplename = samplename;
 		this.igsn = igsn;
-		this.landingpage = landingpage;
-		this.registrant_1 = registrant_1;
+		this.landingpage = landingpage;		
 		this.created = created;
 	}
 
@@ -108,7 +110,7 @@ public class Sample implements java.io.Serializable {
 			String purpose, Point samplinglocgeom,
 			String samplinglocsrs, String elevation, String verticaldatum,
 			String locality, Date samplingstart, Date samplingend,
-			String samplingcampaign, String comment, int registrant_1,
+			String samplingcampaign, String comment,
 			Date created, Date modified, Boolean ispublic,
 			Set<CvSampletype> cvSampletypes,
 			Set<Samplecuration> samplecurations,
@@ -136,8 +138,7 @@ public class Sample implements java.io.Serializable {
 		this.samplingstart = samplingstart;
 		this.samplingend = samplingend;
 		this.samplingcampaign = samplingcampaign;
-		this.comment = comment;
-		this.registrant_1 = registrant_1;
+		this.comment = comment;	
 		this.created = created;
 		this.modified = modified;
 		this.ispublic = ispublic;
@@ -173,7 +174,7 @@ public class Sample implements java.io.Serializable {
 	}
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@PrimaryKeyJoinColumn
+	@JoinColumn( name = "registrant", referencedColumnName="registrantid")
 	public Registrant getRegistrant() {
 		return this.registrant;
 	}
@@ -350,16 +351,7 @@ public class Sample implements java.io.Serializable {
 
 	public void setComment(String comment) {
 		this.comment = comment;
-	}
-
-	@Column(name = "registrant", nullable = false)
-	public int getRegistrant_1() {
-		return this.registrant_1;
-	}
-
-	public void setRegistrant_1(int registrant_1) {
-		this.registrant_1 = registrant_1;
-	}
+	}	
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "created", nullable = false, length = 29)
@@ -400,7 +392,7 @@ public class Sample implements java.io.Serializable {
 		this.cvSampletypes = cvSampletypes;
 	}
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample",cascade={CascadeType.ALL})
 	public Set<Samplecuration> getSamplecurations() {
 		return this.samplecurations;
 	}
@@ -410,7 +402,7 @@ public class Sample implements java.io.Serializable {
 	}
 
 	
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER, cascade={CascadeType.ALL})
 	@JoinTable(name = "sample_features_mapping", joinColumns = { @JoinColumn(name = "sampleid", nullable = false, updatable = false) }, inverseJoinColumns = { @JoinColumn(name = "featureid", nullable = false, updatable = false) })
 	public Set<Samplingfeatures> getSamplingfeatures() {
 		return this.samplingfeatures;
@@ -421,7 +413,7 @@ public class Sample implements java.io.Serializable {
 		this.samplingfeatures = samplingfeatures;
 	}
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample",cascade={CascadeType.ALL})
 	public Set<SampleCollector> getSampleCollectors() {
 		return this.sampleCollectors;
 	}
@@ -430,7 +422,7 @@ public class Sample implements java.io.Serializable {
 		this.sampleCollectors = sampleCollectors;
 	}
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample", cascade={CascadeType.ALL})
 	public Set<Sampleresources> getSampleresourceses() {
 		return this.sampleresourceses;
 	}

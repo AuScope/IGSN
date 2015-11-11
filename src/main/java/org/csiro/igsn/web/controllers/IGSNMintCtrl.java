@@ -65,22 +65,22 @@ public class IGSNMintCtrl {
 	}
 	
 	
-	@RequestMapping(value = "/test/mint", method = { RequestMethod.POST, RequestMethod.HEAD }, consumes = { "application/xml" })
-	public  ResponseEntity<?> mintTest(@RequestBody String samples) {
-		//this.mint(samples,true);
-		return null;
+	@RequestMapping(value = "/test/mint", method = { RequestMethod.POST, RequestMethod.HEAD })
+	public  ResponseEntity<?> mintTest(@RequestBody Samples samples) {
+		
+		return this.mint(samples,true);
 	}
 	
-	@RequestMapping(value = "/mint", method = { RequestMethod.POST, RequestMethod.HEAD }, consumes = { "application/xml" })
+	@RequestMapping(value = "/mint", method = { RequestMethod.POST, RequestMethod.HEAD } )
 	public  ResponseEntity<?> mint(@RequestBody Samples samples) {
-		this.mint(samples,false);
-		return null;
+		return this.mint(samples,false);
+		
 	}
 	
-	public void mint(Samples samples, boolean test){
-		ResponseEntity<String> responseCode = null;
+	public ResponseEntity mint(Samples samples, boolean test){
+		
 		boolean isXMLValid = true;
-		boolean isPrefixValid = true;
+		
 		Schema schema = null;
 
 		// 2. VALIDATE XML ====================================================
@@ -91,9 +91,12 @@ public class IGSNMintCtrl {
 			schema = sf.newSchema(schemaUrl);
 		} catch (SAXException e) {
 			e.printStackTrace();
-			//TODO
+			return   new ResponseEntity<String>("Failure retriving schema : " + e.getLocalizedMessage(),
+					HttpStatus.BAD_REQUEST);
 		} catch (MalformedURLException e) {
 			log.error("URL malformed for schema location. Recheck config.properties file again.");
+			return  new ResponseEntity<String>("Failure retriving schema : " + e.getLocalizedMessage(),
+					HttpStatus.BAD_REQUEST);	
 		}
 
 		try {			
@@ -105,31 +108,36 @@ public class IGSNMintCtrl {
 		} catch (JAXBException e) {
 			e.printStackTrace();
 			isXMLValid = false;
-			responseCode = new ResponseEntity<String>("XML validation is failed : " + e.getLocalizedMessage(),
-					HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<String>("XML validation is failed : " + e.getLocalizedMessage(),
+					HttpStatus.BAD_REQUEST);			
 		}
 		
 		// 3. VALIDATE SUBNAMESPACE BASED ON USER NAME
 				// =============================
 		String usr = null;
+		List<MintEventLog> mintEventLogs = new ArrayList<MintEventLog>();
 		if (isXMLValid) {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
 					.getPrincipal();
 			usr = userDetails.getUsername();
-			List<MintEventLog> mintEventLogs = new ArrayList<MintEventLog>();
+			
 			
 			Set<Prefix> allowedPrefix = prefixEntityService.searchByUser(usr);
 			
 			
 			for (Sample s : samples.getSample()) {
 				MintEventLog mintEventLog= new MintEventLog(s.getSampleNumber().getValue());
-				if(allowedPrefix.contains(s)){
+				if(sampleStartsWithAllowedPrefix(allowedPrefix,s)){
 					//String mintStatus = this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());
 					//if (mintStatus.contains("OK")) {
 					if(true){
-						sampleEntityService.insertSample(s,usr);
-						mintEventLog.setLog(MintErrorCode.SUCCESS, null);
+						try{
+							sampleEntityService.insertSample(s,usr);
+							mintEventLog.setLog(MintErrorCode.SUCCESS, null);
+						}catch(Exception e){
+							mintEventLog.setLog(MintErrorCode.DATABASE_UPDATE_ERROR, e.getMessage());
+						}						
 					} else {
 						mintEventLog.setLog(MintErrorCode.MINT_FAILURE, null);
 					}
@@ -141,8 +149,19 @@ public class IGSNMintCtrl {
 			}
 			
 		}
+		return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.BAD_REQUEST);
 
 	
+	}
+	
+	private boolean sampleStartsWithAllowedPrefix(Set<Prefix> allowedPrefix,Sample s){
+		boolean result = false;
+		for(Prefix prefix:allowedPrefix){
+			if(s.getSampleNumber().getValue().startsWith(prefix.getPrefix())){
+				return true;
+			};
+		}
+		return result;
 	}
 
 }

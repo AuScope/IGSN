@@ -20,7 +20,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
@@ -38,10 +37,14 @@ public  class SecurityConfig extends
         	.httpBasic()
         .and()
 			.authorizeRequests()
-				.antMatchers("/subnamespace/**").authenticated()		 
-		 .and()
-		    .addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
-			.csrf().csrfTokenRepository(csrfTokenRepository());
+				.antMatchers("/subnamespace/**").authenticated()
+				.antMatchers("/rest/**").authenticated()
+				.antMatchers("/igsn/**").authenticated()
+		.and()
+			.csrf().disable();
+//		 .and()
+//		    .addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
+//			.csrf().csrfTokenRepository(csrfTokenRepository());
 		
 		
 	}

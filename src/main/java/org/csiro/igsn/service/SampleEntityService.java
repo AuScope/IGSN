@@ -27,6 +27,7 @@ import org.csiro.igsn.entity.postgres2_0.CvSamplematerial;
 import org.csiro.igsn.entity.postgres2_0.CvSampletype;
 import org.csiro.igsn.entity.postgres2_0.CvSamplingfeature;
 import org.csiro.igsn.entity.postgres2_0.CvSamplingmethod;
+import org.csiro.igsn.entity.postgres2_0.Registrant;
 import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.entity.postgres2_0.SampleCollector;
 import org.csiro.igsn.entity.postgres2_0.Samplecuration;
@@ -249,19 +250,22 @@ public class SampleEntityService {
 	}
 
 
-	public void insertSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user) {
+	public void insertSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user) throws Exception {
 		
 		EntityManager em = JPAEntityManager.createEntityManager();
 		Sample sampleEntity = new Sample();
 		try{
 			em.getTransaction().begin();
-			populateSample(sampleXml,user,em,sampleEntity);						
+			populateSample(sampleXml,user,em,sampleEntity);		
+			//em.persist(sampleEntity);
 			em.flush();
 			em.getTransaction().commit();
 		    em.close();
 		}catch(Exception e){
+			e.printStackTrace();
 			em.getTransaction().rollback();
 			em.close();
+			throw e;
 		}
 
 	}
@@ -297,11 +301,14 @@ public class SampleEntityService {
 		sampleEntity.setComment(sampleXml.getComments());
 				
 		//VT:Registrant
-		sampleEntity.setRegistrant(controlledValueEntityService.searchRegistrant(user));
+		Registrant registrant = controlledValueEntityService.searchRegistrant(user);		
+		sampleEntity.setRegistrant(registrant);
 		
 		sampleEntity.setCreated(new Date());
 		sampleEntity.setModified(new Date());
 		sampleEntity.setIspublic(sampleXml.isIsPublic());
+		
+		em.persist(sampleEntity);
 		
 		//VT: Sample types
 		Set<CvSampletype> cvSampletypes = new HashSet<CvSampletype>();

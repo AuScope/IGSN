@@ -167,7 +167,7 @@ public class Registrant implements java.io.Serializable {
 		this.isactive = isactive;
 	}
 
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "registrant_prefixes", joinColumns = { @JoinColumn(name = "registrant", nullable = false, updatable = false) }, inverseJoinColumns = { @JoinColumn(name = "prefixes", nullable = false, updatable = false) })
 	public Set<Prefix> getPrefixes() {
 		return this.prefixes;

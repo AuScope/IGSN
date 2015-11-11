@@ -255,11 +255,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "samples")
 public class Samples {
 	
-	@XmlAttribute(name="xmlns:xsi")
-	protected final String xmlns_xsi="http://www.w3.org/2001/XMLSchema-instance"; 
-	
-	@XmlAttribute(name="xsi:schemaLocation")
-	protected final String xsi_schemaLocation="http://igsn.org/schema/kernel-v.1.0 https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd"; 
+//	@XmlAttribute(name="xmlns:xsi")
+//	protected final String xmlns_xsi="http://www.w3.org/2001/XMLSchema-instance"; 
+//	
+//	@XmlAttribute(name="xsi:schemaLocation")
+//	protected final String xsi_schemaLocation="http://igsn.org/schema/kernel-v.1.0 https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd"; 
 
     @XmlElement(required = true)
     protected List<Samples.Sample> sample;
