@@ -89,9 +89,12 @@ public class SampleEntityService {
 		
 		//VT: Set classification
 		Samples.Sample.Classification classification = new Samples.Sample.Classification();
-		classification.setClassificationIdentifier(sampleEntity.getClassificationidentifier());
-		classification.setValue(sampleEntity.getClassification());		
-		sampleXml.setClassification(classification);
+		if(sampleEntity.getClassificationidentifier()!=null)
+			classification.setClassificationIdentifier(sampleEntity.getClassificationidentifier());
+		if(sampleEntity.getClassification()!=null)
+			classification.setValue(sampleEntity.getClassification());	
+		if(classification.getClassificationIdentifier()!=null || classification.getValue()!=null)
+			sampleXml.setClassification(classification);
 		
 		//VT: Log element - Not Needed
 		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
@@ -109,9 +112,11 @@ public class SampleEntityService {
 		sampleXml.setMaterialTypes(materialType);
 		
 		//VT: Set other name - DB store othername in 1:1 with sample
-		Samples.Sample.OtherNames otherName = new Samples.Sample.OtherNames();
-		otherName.getOtherName().add(sampleEntity.getOthername());
-		sampleXml.setOtherNames(otherName);
+		if(sampleEntity.getOthername()!=null){
+			Samples.Sample.OtherNames otherName = new Samples.Sample.OtherNames();
+			otherName.getOtherName().add(sampleEntity.getOthername());
+			sampleXml.setOtherNames(otherName);
+		}
 		
 		sampleXml.setPurpose(sampleEntity.getPurpose());
 		
@@ -124,7 +129,9 @@ public class SampleEntityService {
 			resourceId.setValue(resourceEntity.getResourceidentifier());
 			resources.getRelatedResourceIdentifier().add(resourceId);			
 		}
-		sampleXml.setRelatedResources(resources);
+		if(!resources.getRelatedResourceIdentifier().isEmpty()){
+			sampleXml.setRelatedResources(resources);
+		}
 		
 		
 		//VT: Set Sample Collector
@@ -203,8 +210,10 @@ public class SampleEntityService {
 			
 			samplingFeatures.getFeature().add(feature);
 			
-		}						
-		sampleXml.setSamplingFeatures(samplingFeatures);
+		}		
+		if(!samplingFeatures.getFeature().isEmpty()){
+			sampleXml.setSamplingFeatures(samplingFeatures);
+		}
 		
 		//VT:Sampling location
 		Samples.Sample.SamplingLocation samplingLocation = new Samples.Sample.SamplingLocation();
@@ -213,8 +222,10 @@ public class SampleEntityService {
 		//VT: sample elevation
 		elevation.setDatum(sampleEntity.getVerticaldatum());
 		elevation.setUnits(sampleEntity.getElevationUnits());
-		elevation.setValue(sampleEntity.getElevation());		
-		samplingLocation.setElevation(elevation);
+		elevation.setValue(sampleEntity.getElevation());
+		if(elevation.getDatum()!=null || elevation.getUnits() != null || elevation.getValue()!=null){
+			samplingLocation.setElevation(elevation);
+		}
 		
 		samplingLocation.setLocality(sampleEntity.getLocality());
 		
@@ -263,7 +274,7 @@ public class SampleEntityService {
 		Sample sampleEntity = new Sample();
 		try{
 			em.getTransaction().begin();
-			insertSample(sampleXml,user,em,sampleEntity,false);		
+			insertSample(sampleXml,user,em,sampleEntity);		
 			Status status = searchStatusByName("Registered");
 			sampleEntity.setStatusByRegistrationstatus(status);
 			em.persist(sampleEntity);
@@ -283,19 +294,21 @@ public class SampleEntityService {
 	 * @param sampleXml
 	 * @param user
 	 * @param em
-	 * @param sampleEntity
+	 * @param sampleEntity - May not need this in the future
 	 * @param update - true if this is a update else false to insert new
 	 * @throws Exception
 	 */
-	private void insertSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user, EntityManager em,Sample sampleEntity,boolean update) throws Exception{
-						
+	private void insertSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user, EntityManager em,Sample sampleEntity) throws Exception{
+		
+		boolean isUpdate = sampleXml.getLogElement().getEvent().equals(EventType.UPDATED)?true:false;
+		
 		DateFormat df =new SimpleDateFormat("yyyy");
 		
 		//VT:Sampling Method
 		CvSamplingmethod samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod());
 		if(samplingMethod == null){
 			samplingMethod = new CvSamplingmethod(sampleXml.getSamplingMethod(),"");
-			em.persist(samplingMethod);
+			em.persist(samplingMethod);//VT:TODO sort this out, Sampling Method should be a controlled list.
 		}
 		sampleEntity.setCvSamplingmethod(samplingMethod);
 		sampleEntity.setSamplename(sampleXml.getSampleName());
@@ -322,29 +335,27 @@ public class SampleEntityService {
 		sampleEntity.setSamplinglocgeom(samplinglocgeom);
 		sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getWkt().getSrs());
 		
-		try{
+		if(sampleXml.getSamplingLocation().getElevation()!=null){
 			sampleEntity.setElevation(sampleXml.getSamplingLocation().getElevation().getValue());
-		}catch(NullPointerException e){
-			//VT: Do nothing because field is not mandatory
+		}else{
+			sampleEntity.setElevation(null);
 		}
 		
-		try{
+		if(sampleXml.getSamplingLocation().getElevation()!=null){
 			sampleEntity.setVerticaldatum(sampleXml.getSamplingLocation().getElevation().getDatum());
-		}catch(NullPointerException e){
-			//VT: Do nothing because field is not mandatory
+		}else{
+			sampleEntity.setVerticaldatum(null);
 		}	
 		
-		try{
+		if(sampleXml.getSamplingLocation().getElevation()!=null){
 			sampleEntity.setElevationUnits(sampleXml.getSamplingLocation().getElevation().getUnits());
-		}catch(NullPointerException e){
-			//VT: Do nothing because field is not mandatory
+		}else{
+			sampleEntity.setElevationUnits(null);
 		}
 		
-		try{
-			sampleEntity.setLocality(sampleXml.getSamplingLocation().getLocality());
-		}catch(NullPointerException e){
-			//VT: Do nothing because field is not mandatory
-		}	
+		
+		sampleEntity.setLocality(sampleXml.getSamplingLocation().getLocality());
+		
 		sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getTimeInstant()));	
 		
 		
@@ -358,8 +369,9 @@ public class SampleEntityService {
 		//VT:Registrant
 		Registrant registrant = controlledValueEntityService.searchRegistrant(user);		
 		sampleEntity.setRegistrant(registrant);
-		
-		sampleEntity.setCreated(new Date());
+		if(!isUpdate){
+			sampleEntity.setCreated(new Date());
+		}
 		sampleEntity.setModified(new Date());
 		sampleEntity.setIspublic(sampleXml.isIsPublic());
 		
@@ -370,9 +382,13 @@ public class SampleEntityService {
 		for(String sampleType:sampleXml.getSampleTypes().getSampleType()){
 			cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleType));
 		}
-		if(!cvSampletypes.isEmpty()){
+		if(cvSampletypes.isEmpty()){
+			sampleEntity.setCvSampletypes(null);
+		}else{
 			sampleEntity.setCvSampletypes(cvSampletypes);
 		}
+		
+		
 		
 		//VT:Curator
 		Set<Samplecuration> samplecurations=new HashSet<Samplecuration>();
@@ -383,9 +399,12 @@ public class SampleEntityService {
 						null,""));
 			}
 		}
-		if(!samplecurations.isEmpty()){
-			sampleEntity.setSamplecurations(samplecurations);			
+		if(samplecurations.isEmpty()){
+			sampleEntity.setSamplecurations(null);
+		}else{
+			sampleEntity.setSamplecurations(samplecurations);
 		}
+		
 		
 		//VT: SamplingFeatures
 		Set<Samplingfeatures> samplingfeatures = new HashSet<Samplingfeatures>();
@@ -409,9 +428,12 @@ public class SampleEntityService {
 				}
 			}
 		}
-		if(!samplingfeatures.isEmpty()){
+		if(samplingfeatures.isEmpty()){
+			sampleEntity.setSamplingfeatures(null);
+		}else{
 			sampleEntity.setSamplingfeatures(samplingfeatures);
-		}
+		}		
+		
 		
 		//VT:SampleCollector
 		Set<SampleCollector> sampleCollectors = new HashSet<SampleCollector>();
@@ -420,9 +442,13 @@ public class SampleEntityService {
 				sampleCollectors.add(new SampleCollector(sampleEntity,sampleCollector.getValue(),sampleCollector.getCollectorIdentifier()));
 			}
 		}
-		if(!sampleCollectors.isEmpty()){
+		if(sampleCollectors.isEmpty()){
+			sampleEntity.setSampleCollectors(null);
+		}else{
 			sampleEntity.setSampleCollectors(sampleCollectors);
 		}
+		
+		
 		
 		
 		//VT:SampleResource
@@ -434,18 +460,21 @@ public class SampleEntityService {
 				sampleresourceses.add(new Sampleresources(cvRelatedIdentifiertype,sampleEntity,resource.getValue(),cvResourceRelationshiptype,new Date()));
 			}
 		}
-		if(!sampleresourceses.isEmpty()){
-			sampleEntity.setSampleresourceses(sampleresourceses);			
-		}
+		
+		sampleEntity.setSampleresourceses(sampleresourceses);			
+		
 		
 		//VT:SampleMaterial
 		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();		
 		for(String sampleMaterial:sampleXml.getMaterialTypes().getMaterialType()){
 			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleMaterial));
 		}
-		if(!cvSamplematerials.isEmpty()){
+		if(cvSamplematerials.isEmpty()){
+			sampleEntity.setCvSamplematerials(null);
+		}else{
 			sampleEntity.setCvSamplematerials(cvSamplematerials);
 		}
+		
 
 	}
 	
@@ -512,10 +541,10 @@ public class SampleEntityService {
 
 	public void updateSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml, String user) throws Exception {
 		EntityManager em = JPAEntityManager.createEntityManager();
-		Sample sampleEntity = new Sample();
+		Sample sampleEntity = this.searchSampleByIGSN(sampleXml.getSampleNumber().getValue());
 		try{
 			em.getTransaction().begin();
-			insertSample(sampleXml,user,em,sampleEntity,true);		
+			insertSample(sampleXml,user,em,sampleEntity);		
 			Status status = searchStatusByName("Updated");
 			sampleEntity.setStatusByRegistrationstatus(status);
 			em.merge(sampleEntity);

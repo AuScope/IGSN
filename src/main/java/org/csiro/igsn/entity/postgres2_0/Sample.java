@@ -392,7 +392,7 @@ public class Sample implements java.io.Serializable {
 		this.cvSampletypes = cvSampletypes;
 	}
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample",cascade={CascadeType.ALL})
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample",cascade={CascadeType.ALL},orphanRemoval=true)
 	public Set<Samplecuration> getSamplecurations() {
 		return this.samplecurations;
 	}
@@ -413,7 +413,7 @@ public class Sample implements java.io.Serializable {
 		this.samplingfeatures = samplingfeatures;
 	}
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample",cascade={CascadeType.ALL})
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample",cascade={CascadeType.ALL}, orphanRemoval=true)
 	public Set<SampleCollector> getSampleCollectors() {
 		return this.sampleCollectors;
 	}
@@ -422,7 +422,7 @@ public class Sample implements java.io.Serializable {
 		this.sampleCollectors = sampleCollectors;
 	}
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample", cascade={CascadeType.ALL})
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "sample", cascade={CascadeType.ALL}, orphanRemoval=true)
 	public Set<Sampleresources> getSampleresourceses() {
 		return this.sampleresourceses;
 	}
