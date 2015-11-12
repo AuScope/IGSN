@@ -1,6 +1,6 @@
 package org.csiro.igsn.exception;
 
-public class MintEventLog extends Throwable{
+public class MintEventLog {
 
 	private static final long serialVersionUID = -1695345647328255048L;
 	

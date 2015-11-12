@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
+import org.csiro.igsn.bindings.allocation2_0.EventType;
 import org.csiro.igsn.bindings.allocation2_0.IdentifierType;
 import org.csiro.igsn.bindings.allocation2_0.ObjectFactory;
 import org.csiro.igsn.bindings.allocation2_0.RelatedIdentifierType;
@@ -52,10 +53,10 @@ public class SampleEntityService {
 		this.controlledValueEntityService = controlledValueEntityService;
 	}
 
-	public ResponseEntity<? extends Object> getSampleMetadataByIGSN(String igsn) {
+	public ResponseEntity<? extends Object> getSampleMetadataByIGSN(String igsn) throws Exception {
 		
 		
-		Sample sampleEntity= this.search(igsn);
+		Sample sampleEntity= this.searchSampleByIGSN(igsn);
 		if(sampleEntity==null){
 			return new ResponseEntity<String>("IGSN does not exists in our database", HttpStatus.NOT_FOUND); 
 		}
@@ -69,7 +70,8 @@ public class SampleEntityService {
 	}
 	
 
-	public Samples.Sample SampleToXml(Sample sampleEntity){
+	public Samples.Sample SampleToXml(Sample sampleEntity) throws Exception{
+		
 		
 		Calendar cal = Calendar.getInstance();
 		
@@ -92,12 +94,12 @@ public class SampleEntityService {
 		sampleXml.setClassification(classification);
 		
 		//VT: Log element - Not Needed
-//		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
-//		logElement.setValue("log value dunno where");		
-//		cal.setTime(new Date());				  
-//		logElement.setTimeStamp(String.valueOf(cal.get(Calendar.YEAR)));					
-//		logElement.setEvent(EventType.SUBMITTED);		
-//		sampleXml.setLogElement(logElement);
+		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
+		logElement.setValue("Not Used for returned result");		
+		cal.setTime(new Date());				  
+		logElement.setTimeStamp(String.valueOf(cal.get(Calendar.YEAR)));					
+		logElement.setEvent(EventType.SUBMITTED);		
+		sampleXml.setLogElement(logElement);
 		
 		//VT: Set Material Type
 		Samples.Sample.MaterialTypes materialType = new Samples.Sample.MaterialTypes();
@@ -145,9 +147,12 @@ public class SampleEntityService {
 			
 			//VT Set time - Linked to database curation start time
 			Curator.CurationTime curationTime= new Curator.CurationTime();
-			cal.setTime(sc.getCurationstart());
-			curationTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));			
-			c.setCurationTime(curationTime);
+			if(sc.getCurationstart()!=null){
+				cal.setTime(sc.getCurationstart());
+				curationTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));			
+				c.setCurationTime(curationTime);
+			}
+			
 		
 			//VT Set curator
 			sampleCurationXml.getCurator().add(c);
@@ -222,11 +227,12 @@ public class SampleEntityService {
 		sampleXml.setSamplingLocation(samplingLocation);
 				
 		sampleXml.setSamplingMethod(sampleEntity.getCvSamplingmethod().getMethodidentifier());
-		
-		Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
-		cal.setTime(sampleEntity.getSamplingstart());			    
-		samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
-		sampleXml.setSamplingTime(samplingTime);
+		if(sampleEntity.getSamplingstart()!=null){
+			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
+			cal.setTime(sampleEntity.getSamplingstart());			    
+			samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
+			sampleXml.setSamplingTime(samplingTime);
+		}
 		
 		return sampleXml;
 		
@@ -234,18 +240,19 @@ public class SampleEntityService {
 	
 	
 	
-	public Sample search(String igsn){
-		try{
-			EntityManager em = JPAEntityManager.createEntityManager();
+	public Sample searchSampleByIGSN(String igsn){
+		EntityManager em = JPAEntityManager.createEntityManager();
+		try{			
 			Sample result = em.createNamedQuery("Sample.search",Sample.class)
 		    .setParameter("igsn", igsn)
-		    .getSingleResult();
-			 em.close();			 
+		    .getSingleResult();			 		
 			 return result;
 		}catch(NoResultException e){
 			return null;
 		}catch(Exception e){
 			throw e;
+		}finally{
+			em.close();	
 		}
 	}
 
@@ -256,8 +263,10 @@ public class SampleEntityService {
 		Sample sampleEntity = new Sample();
 		try{
 			em.getTransaction().begin();
-			populateSample(sampleXml,user,em,sampleEntity);		
-			//em.persist(sampleEntity);
+			insertSample(sampleXml,user,em,sampleEntity,false);		
+			Status status = searchStatusByName("Registered");
+			sampleEntity.setStatusByRegistrationstatus(status);
+			em.persist(sampleEntity);
 			em.flush();
 			em.getTransaction().commit();
 		    em.close();
@@ -269,8 +278,17 @@ public class SampleEntityService {
 		}
 
 	}
-	
-	private void populateSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user, EntityManager em,Sample sampleEntity) throws ParseException{
+	/**
+	 * 
+	 * @param sampleXml
+	 * @param user
+	 * @param em
+	 * @param sampleEntity
+	 * @param update - true if this is a update else false to insert new
+	 * @throws Exception
+	 */
+	private void insertSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user, EntityManager em,Sample sampleEntity,boolean update) throws Exception{
+						
 		DateFormat df =new SimpleDateFormat("yyyy");
 		
 		//VT:Sampling Method
@@ -281,24 +299,61 @@ public class SampleEntityService {
 		}
 		sampleEntity.setCvSamplingmethod(samplingMethod);
 		sampleEntity.setSamplename(sampleXml.getSampleName());
-		sampleEntity.setOthername(sampleXml.getOtherNames().getOtherName().get(0));//VT database only support 1 other name;
+		try{
+			sampleEntity.setOthername(sampleXml.getOtherNames().getOtherName().get(0));//VT database only support 1 other name;
+		}catch(NullPointerException e){
+			//VT: Do nothing because field is not mandatory
+		}
 		sampleEntity.setIgsn(sampleXml.getSampleNumber().getValue());
 		sampleEntity.setLandingpage(sampleXml.getLandingPage());
-		sampleEntity.setClassification(sampleXml.getClassification().getValue());
-		sampleEntity.setClassificationidentifier(sampleXml.getClassification().getClassificationIdentifier());
+		try{
+			sampleEntity.setClassification(sampleXml.getClassification().getValue());
+			sampleEntity.setClassificationidentifier(sampleXml.getClassification().getClassificationIdentifier());
+		}catch(NullPointerException e){
+			//VT: Do nothing because field is not mandatory
+		}
+		
+	
 		sampleEntity.setPurpose(sampleXml.getPurpose());
+		
 		
 		String[] samplingLocationStrPoint = sampleXml.getSamplingLocation().getWkt().getValue().split(" ");
 		Point samplinglocgeom = (Point)(SpatialUtilities.wktToGeometry(samplingLocationStrPoint[0], samplingLocationStrPoint[1]));		
 		sampleEntity.setSamplinglocgeom(samplinglocgeom);
 		sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getWkt().getSrs());
-		sampleEntity.setElevation(sampleXml.getSamplingLocation().getElevation().getValue());
-		sampleEntity.setVerticaldatum(sampleXml.getSamplingLocation().getElevation().getDatum());
-		sampleEntity.setElevationUnits(sampleXml.getSamplingLocation().getElevation().getUnits());
-		sampleEntity.setLocality(sampleXml.getSamplingLocation().getLocality());
-		sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getTimeInstant()));		
+		
+		try{
+			sampleEntity.setElevation(sampleXml.getSamplingLocation().getElevation().getValue());
+		}catch(NullPointerException e){
+			//VT: Do nothing because field is not mandatory
+		}
+		
+		try{
+			sampleEntity.setVerticaldatum(sampleXml.getSamplingLocation().getElevation().getDatum());
+		}catch(NullPointerException e){
+			//VT: Do nothing because field is not mandatory
+		}	
+		
+		try{
+			sampleEntity.setElevationUnits(sampleXml.getSamplingLocation().getElevation().getUnits());
+		}catch(NullPointerException e){
+			//VT: Do nothing because field is not mandatory
+		}
+		
+		try{
+			sampleEntity.setLocality(sampleXml.getSamplingLocation().getLocality());
+		}catch(NullPointerException e){
+			//VT: Do nothing because field is not mandatory
+		}	
+		sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getTimeInstant()));	
+		
+		
 		sampleEntity.setSamplingcampaign(sampleXml.getSamplingCampaign());
+		
+		
+		
 		sampleEntity.setComment(sampleXml.getComments());
+		
 				
 		//VT:Registrant
 		Registrant registrant = controlledValueEntityService.searchRegistrant(user);		
@@ -308,7 +363,7 @@ public class SampleEntityService {
 		sampleEntity.setModified(new Date());
 		sampleEntity.setIspublic(sampleXml.isIsPublic());
 		
-		em.persist(sampleEntity);
+	
 		
 		//VT: Sample types
 		Set<CvSampletype> cvSampletypes = new HashSet<CvSampletype>();
@@ -322,7 +377,11 @@ public class SampleEntityService {
 		//VT:Curator
 		Set<Samplecuration> samplecurations=new HashSet<Samplecuration>();
 		for(Curator curator:sampleXml.getSampleCuration().getCurator()){
-			samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCuratorName(),df.parse(curator.getCurationTime().getTimeInstant()),null,""));
+			if(curator!=null){
+				samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCuratorName(),
+						curator.getCurationTime()==null || curator.getCurationTime().getTimeInstant()==null?null:df.parse(curator.getCurationTime().getTimeInstant()),
+						null,""));
+			}
 		}
 		if(!samplecurations.isEmpty()){
 			sampleEntity.setSamplecurations(samplecurations);			
@@ -330,12 +389,25 @@ public class SampleEntityService {
 		
 		//VT: SamplingFeatures
 		Set<Samplingfeatures> samplingfeatures = new HashSet<Samplingfeatures>();
-		for(Feature feature:sampleXml.getSamplingFeatures().getFeature()){
-			CvSamplingfeature cvSamplingfeature = controlledValueEntityService.searchSamplingfeatureByIdentifier(feature.getFeatureType());
-			String[] featureLocStrPoint = feature.getFeatureLocation().getWkt().getValue().split(" ");
-			Point featureLoc = (Point)(SpatialUtilities.wktToGeometry(featureLocStrPoint[0], featureLocStrPoint[1]));	
-			samplingfeatures.add(new Samplingfeatures(cvSamplingfeature,feature.getFeatureName(),featureLoc,feature.getFeatureLocation().getWkt().getSrs(),feature.getFeatureLocation().getElevation().getValue(),
-					feature.getFeatureLocation().getElevation().getDatum(),feature.getFeatureLocation().getLocality(),feature.getFeatureLocation().getElevation().getUnits()));
+		if(sampleXml.getSamplingFeatures()!=null){
+			for(Feature feature:sampleXml.getSamplingFeatures().getFeature()){
+				if(feature !=null){
+					CvSamplingfeature cvSamplingfeature = controlledValueEntityService.searchSamplingfeatureByIdentifier(feature.getFeatureType());
+					Point featureLoc = null;
+					try{
+						String[] featureLocStrPoint = feature.getFeatureLocation().getWkt().getValue().split(" ");										
+						 featureLoc = (Point)(SpatialUtilities.wktToGeometry(featureLocStrPoint[0], featureLocStrPoint[1]));
+					}catch(Exception e){
+						
+					}					
+					samplingfeatures.add(new Samplingfeatures(cvSamplingfeature,feature.getFeatureName(),featureLoc,
+							feature.getFeatureLocation()==null?null:feature.getFeatureLocation().getWkt().getSrs(),
+							feature.getFeatureLocation()==null || feature.getFeatureLocation().getElevation()==null?null:feature.getFeatureLocation().getElevation().getValue(),
+							feature.getFeatureLocation()==null || feature.getFeatureLocation().getElevation()==null?null:feature.getFeatureLocation().getElevation().getDatum(),
+							feature.getFeatureLocation()==null ?null:feature.getFeatureLocation().getLocality(),
+							feature.getFeatureLocation()==null || feature.getFeatureLocation().getElevation()==null?null:feature.getFeatureLocation().getElevation().getUnits()));
+				}
+			}
 		}
 		if(!samplingfeatures.isEmpty()){
 			sampleEntity.setSamplingfeatures(samplingfeatures);
@@ -344,7 +416,9 @@ public class SampleEntityService {
 		//VT:SampleCollector
 		Set<SampleCollector> sampleCollectors = new HashSet<SampleCollector>();
 		for(Collector sampleCollector:sampleXml.getSampleCollectors().getCollector()){
-			sampleCollectors.add(new SampleCollector(sampleEntity,sampleCollector.getValue(),sampleCollector.getCollectorIdentifier()));
+			if(sampleCollector != null){
+				sampleCollectors.add(new SampleCollector(sampleEntity,sampleCollector.getValue(),sampleCollector.getCollectorIdentifier()));
+			}
 		}
 		if(!sampleCollectors.isEmpty()){
 			sampleEntity.setSampleCollectors(sampleCollectors);
@@ -353,26 +427,111 @@ public class SampleEntityService {
 		
 		//VT:SampleResource
 		Set<Sampleresources> sampleresourceses = new HashSet<Sampleresources>();
-		for(RelatedResourceIdentifier resource:sampleXml.getRelatedResources().getRelatedResourceIdentifier()){
-			CvRelatedIdentifiertype cvRelatedIdentifiertype=controlledValueEntityService.searchRelatedIdentifier(resource.getRelatedIdentifierType().value());
-			CvResourceRelationshiptype cvResourceRelationshiptype = controlledValueEntityService.searchByRelationshipType(resource.getRelationType().value());
-			sampleresourceses.add(new Sampleresources(cvRelatedIdentifiertype,sampleEntity,resource.getValue(),cvResourceRelationshiptype,new Date()));
+		if(sampleXml.getRelatedResources()!=null && sampleXml.getRelatedResources().getRelatedResourceIdentifier()!=null){
+			for(RelatedResourceIdentifier resource:sampleXml.getRelatedResources().getRelatedResourceIdentifier()){					
+				CvRelatedIdentifiertype cvRelatedIdentifiertype=controlledValueEntityService.searchRelatedIdentifier(resource.getRelatedIdentifierType().value());
+				CvResourceRelationshiptype cvResourceRelationshiptype = controlledValueEntityService.searchByRelationshipType(resource.getRelationType().value());					
+				sampleresourceses.add(new Sampleresources(cvRelatedIdentifiertype,sampleEntity,resource.getValue(),cvResourceRelationshiptype,new Date()));
+			}
 		}
 		if(!sampleresourceses.isEmpty()){
 			sampleEntity.setSampleresourceses(sampleresourceses);			
 		}
 		
 		//VT:SampleMaterial
-		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();
+		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();		
 		for(String sampleMaterial:sampleXml.getMaterialTypes().getMaterialType()){
 			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleMaterial));
 		}
 		if(!cvSamplematerials.isEmpty()){
 			sampleEntity.setCvSamplematerials(cvSamplematerials);
 		}
+
 	}
 	
+	public Status searchStatusByName(String statuscode){
+		try{
+			EntityManager em = JPAEntityManager.createEntityManager();
+			Status result = em.createNamedQuery("Status.searchStatusByName",Status.class)
+		    .setParameter("statuscode", statuscode)
+		    .getSingleResult();
+			 em.close();			 
+			 return result;
+		}catch(NoResultException e){
+			return null;
+		}catch(Exception e){
+			throw e;
+		}
+	}
 
+	public void destroySample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sample) {
+		EntityManager em = JPAEntityManager.createEntityManager();		
+		try{
+			em.getTransaction().begin();			
+			Sample s = this.searchSampleByIGSN(sample.getSampleNumber().getValue());
+			Status status = searchStatusByName("Destroyed");
+			s.setStatusByPhysicalsamplestatus(status);
+			em.merge(s);
+			em.flush();
+			em.getTransaction().commit();		    
+		}catch(Exception e){
+			e.printStackTrace();
+			em.getTransaction().rollback();
+			em.close();
+			throw e;
+		}finally{
+			em.close();
+		}
+		
+	}
+	
+	
+	
+	
+	
+	
+	public void deprecateSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sample) {
+		EntityManager em = JPAEntityManager.createEntityManager();		
+		try{
+			em.getTransaction().begin();			
+			Sample s = this.searchSampleByIGSN(sample.getSampleNumber().getValue());
+			Status status = searchStatusByName("Deprecated");
+			s.setStatusByRegistrationstatus(status);
+			em.merge(s);
+			em.flush();
+			em.getTransaction().commit();		    
+		}catch(Exception e){
+			e.printStackTrace();
+			em.getTransaction().rollback();
+			em.close();
+			throw e;
+		}finally{
+			em.close();
+		}		
+	}
+
+	public void updateSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml, String user) throws Exception {
+		EntityManager em = JPAEntityManager.createEntityManager();
+		Sample sampleEntity = new Sample();
+		try{
+			em.getTransaction().begin();
+			insertSample(sampleXml,user,em,sampleEntity,true);		
+			Status status = searchStatusByName("Updated");
+			sampleEntity.setStatusByRegistrationstatus(status);
+			em.merge(sampleEntity);
+			em.flush();
+			em.getTransaction().commit();
+		    em.close();
+		}catch(Exception e){
+			e.printStackTrace();
+			em.getTransaction().rollback();
+			em.close();
+			throw e;
+		}
+		
+	}
+	
+	
 	
 	
 }

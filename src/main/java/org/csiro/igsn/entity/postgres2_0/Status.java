@@ -4,10 +4,13 @@ package org.csiro.igsn.entity.postgres2_0;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -16,6 +19,12 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "status")
+@NamedQueries({
+	@NamedQuery(
+			name="Status.searchStatusByName",
+		    query="SELECT r FROM Status r where r.statuscode = :statuscode"
+	)
+})	
 public class Status implements java.io.Serializable {
 
 	private int statusid;

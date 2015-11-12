@@ -17,6 +17,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.log4j.Logger;
+import org.csiro.igsn.bindings.allocation2_0.EventType;
 import org.csiro.igsn.bindings.allocation2_0.Samples;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample;
 import org.csiro.igsn.entity.postgres2_0.Prefix;
@@ -32,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -64,20 +66,23 @@ public class IGSNMintCtrl {
 		this.prefixEntityService = prefixEntityService;
 	}
 	
+
+	
 	
 	@RequestMapping(value = "/test/mint", method = { RequestMethod.POST, RequestMethod.HEAD })
 	public  ResponseEntity<?> mintTest(@RequestBody Samples samples) {
-		
-		return this.mint(samples,true);
+		ResponseEntity<?> result=this.mint(samples,true);
+		return result;
 	}
 	
 	@RequestMapping(value = "/mint", method = { RequestMethod.POST, RequestMethod.HEAD } )
 	public  ResponseEntity<?> mint(@RequestBody Samples samples) {
+		
 		return this.mint(samples,false);
 		
 	}
 	
-	public ResponseEntity mint(Samples samples, boolean test){
+	public ResponseEntity<?> mint(Samples samples, boolean test){
 		
 		boolean isXMLValid = true;
 		
@@ -116,8 +121,7 @@ public class IGSNMintCtrl {
 				// =============================
 		String usr = null;
 		List<MintEventLog> mintEventLogs = new ArrayList<MintEventLog>();
-		if (isXMLValid) {
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (isXMLValid) {			
 			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
 					.getPrincipal();
 			usr = userDetails.getUsername();
@@ -133,13 +137,24 @@ public class IGSNMintCtrl {
 					//if (mintStatus.contains("OK")) {
 					if(true){
 						try{
-							sampleEntityService.insertSample(s,usr);
+							if(s.getLogElement().getEvent().equals(EventType.SUBMITTED)){
+								sampleEntityService.insertSample(s,usr);
+							}else if(s.getLogElement().getEvent().equals(EventType.DESTROYED)){
+								sampleEntityService.destroySample(s);
+							}else if(s.getLogElement().getEvent().equals(EventType.DEPRECATED)){
+								sampleEntityService.deprecateSample(s);
+							}else if(s.getLogElement().getEvent().equals(EventType.UPDATED)){
+								sampleEntityService.updateSample(s,usr);
+							}
 							mintEventLog.setLog(MintErrorCode.SUCCESS, null);
+							mintEventLogs.add(mintEventLog);
 						}catch(Exception e){
 							mintEventLog.setLog(MintErrorCode.DATABASE_UPDATE_ERROR, e.getMessage());
+							mintEventLogs.add(mintEventLog);
 						}						
 					} else {
 						mintEventLog.setLog(MintErrorCode.MINT_FAILURE, null);
+						mintEventLogs.add(mintEventLog);
 					}
 					
 					
@@ -149,7 +164,7 @@ public class IGSNMintCtrl {
 			}
 			
 		}
-		return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.OK);
 
 	
 	}
