@@ -194,7 +194,7 @@ public class Sample implements java.io.Serializable {
 		this.statusByPhysicalsamplestatus = statusByPhysicalsamplestatus;
 	}
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "registrationstatus")
 	public Status getStatusByRegistrationstatus() {
 		return this.statusByRegistrationstatus;

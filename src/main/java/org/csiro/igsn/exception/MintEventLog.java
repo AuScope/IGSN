@@ -4,15 +4,19 @@ public class MintEventLog {
 
 	private static final long serialVersionUID = -1695345647328255048L;
 	
-	private MintErrorCode code;	
-	private String message;
-	private String exceptionCause;
+	private MintErrorCode mintStatus;
+	private DatabaseErrorCode databaseStatus;
+	private String mintLog;
+	private String databaseLog;
+	private String mintExceptionCause;
+	private String databaseExceptionCause;
 	private String sampleId;
+	private String handle;
 
 	
 	
 	public MintEventLog(MintErrorCode code,String exceptionCause,String sampleId){
-		this.setLog(code,exceptionCause);
+		this.setMintLog(code,exceptionCause);
 		this.setSampleId(sampleId);
 	}
 	
@@ -20,12 +24,20 @@ public class MintEventLog {
 		this.setSampleId(sampleId);
 	}
 	
-	public MintErrorCode getCode(){
-		return code;
+	public MintErrorCode getMintStatus(){
+		return mintStatus;
+	}
+	
+	public DatabaseErrorCode getDatabaseStatus(){
+		return databaseStatus;
 	}
 
-	public String getExceptionCause() {
-		return exceptionCause;
+	public String getMintExceptionCause() {
+		return mintExceptionCause;
+	}
+	
+	public String getDatabaseExceptionCause() {
+		return databaseExceptionCause;
 	}
 
 
@@ -37,14 +49,32 @@ public class MintEventLog {
 		this.sampleId = sampleId;
 	}
 
-	public void setLog(MintErrorCode code, String exceptionCause) {
-		this.code = code;
-		this.message = code.getMessage();
-		this.exceptionCause=exceptionCause;
+	public void setMintLog(MintErrorCode code, String exceptionCause) {
+		this.mintStatus = code;
+		this.mintLog = code.getMessage();
+		this.mintExceptionCause=exceptionCause;
+	}
+	
+	public void setDatabaseLog(DatabaseErrorCode code, String exceptionCause) {
+		this.databaseStatus = code;
+		this.databaseLog = code.getMessage();
+		this.databaseExceptionCause=exceptionCause;
 	}
 
-	public String getMessage() {
-		return message;
+	public String getMintLog() {
+		return mintLog;
+	}
+	
+	public String getDatabaseLog() {
+		return databaseLog;
+	}
+
+	public String getHandle() {
+		return handle;
+	}
+
+	public void setHandle(String handle) {
+		this.handle = handle;
 	}
 	
 

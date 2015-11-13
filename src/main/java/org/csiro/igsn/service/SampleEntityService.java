@@ -98,7 +98,7 @@ public class SampleEntityService {
 		
 		//VT: Log element - Not Needed
 		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
-		logElement.setValue("Not Used for returned result");		
+		logElement.setValue("Status:"+ sampleEntity.getStatusByRegistrationstatus().getStatuscode());		
 		cal.setTime(new Date());				  
 		logElement.setTimeStamp(String.valueOf(cal.get(Calendar.YEAR)));					
 		logElement.setEvent(EventType.SUBMITTED);		
@@ -558,6 +558,32 @@ public class SampleEntityService {
 			throw e;
 		}
 		
+	}
+
+	public void testInsertSample(
+			org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml, String user) throws Exception {
+		
+		if(!sampleXml.getLogElement().getEvent().equals(EventType.SUBMITTED)){
+			throw new Exception("You can only test insert with log event type = submitted");
+		}
+		
+		EntityManager em = JPAEntityManager.createEntityManager();
+		Sample sampleEntity = new Sample();
+		try{
+			em.getTransaction().begin();
+			insertSample(sampleXml,user,em,sampleEntity);		
+			Status status = searchStatusByName("Registered");
+			sampleEntity.setStatusByRegistrationstatus(status);
+			em.persist(sampleEntity);
+			em.flush();
+			em.getTransaction().rollback();//VT: Because this is a test, it will always be rolled back
+		    em.close();
+		}catch(Exception e){
+			e.printStackTrace();
+			em.getTransaction().rollback();
+			em.close();
+			throw e;
+		}
 	}
 	
 	

@@ -21,6 +21,7 @@ import org.csiro.igsn.bindings.allocation2_0.EventType;
 import org.csiro.igsn.bindings.allocation2_0.Samples;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample;
 import org.csiro.igsn.entity.postgres2_0.Prefix;
+import org.csiro.igsn.exception.DatabaseErrorCode;
 import org.csiro.igsn.exception.MintErrorCode;
 import org.csiro.igsn.exception.MintEventLog;
 import org.csiro.igsn.service.MintService;
@@ -121,50 +122,66 @@ public class IGSNMintCtrl {
 				// =============================
 		String usr = null;
 		List<MintEventLog> mintEventLogs = new ArrayList<MintEventLog>();
+		boolean containsError=false;
 		if (isXMLValid) {			
 			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
 					.getPrincipal();
 			usr = userDetails.getUsername();
 			
 			
-			Set<Prefix> allowedPrefix = prefixEntityService.searchByUser(usr);
-			
+			Set<Prefix> allowedPrefix = prefixEntityService.searchByUser(usr);			
 			
 			for (Sample s : samples.getSample()) {
 				MintEventLog mintEventLog= new MintEventLog(s.getSampleNumber().getValue());
-				if(sampleStartsWithAllowedPrefix(allowedPrefix,s)){
-					//String mintStatus = this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());
-					//if (mintStatus.contains("OK")) {
-					if(true){
+				if(sampleStartsWithAllowedPrefix(allowedPrefix,s)){		
+					if(s.getLogElement().getEvent().equals(EventType.SUBMITTED)||s.getLogElement().getEvent().equals(EventType.UPDATED)){
 						try{
-							if(s.getLogElement().getEvent().equals(EventType.SUBMITTED)){
-								sampleEntityService.insertSample(s,usr);
-							}else if(s.getLogElement().getEvent().equals(EventType.DESTROYED)){
-								sampleEntityService.destroySample(s);
-							}else if(s.getLogElement().getEvent().equals(EventType.DEPRECATED)){
-								sampleEntityService.deprecateSample(s);
-							}else if(s.getLogElement().getEvent().equals(EventType.UPDATED)){
-								sampleEntityService.updateSample(s,usr);
-							}
-							mintEventLog.setLog(MintErrorCode.SUCCESS, null);
-							mintEventLogs.add(mintEventLog);
+							String igsn=this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());
+							
+							mintEventLog.setMintLog(MintErrorCode.MINT_SUCCESS, null);
+							mintEventLog.setHandle("http://hdl.handle.net/"+igsn);
+							
 						}catch(Exception e){
-							mintEventLog.setLog(MintErrorCode.DATABASE_UPDATE_ERROR, e.getMessage());
+							mintEventLog.setMintLog(MintErrorCode.MINT_FAILURE, e.getMessage());
 							mintEventLogs.add(mintEventLog);
-						}						
-					} else {
-						mintEventLog.setLog(MintErrorCode.MINT_FAILURE, null);
-						mintEventLogs.add(mintEventLog);
+							containsError=true;
+							continue;
+						}
 					}
 					
+					try{
+						if(test){
+							sampleEntityService.testInsertSample(s,usr);
+						}else if(s.getLogElement().getEvent().equals(EventType.SUBMITTED)){
+							sampleEntityService.insertSample(s,usr);
+						}else if(s.getLogElement().getEvent().equals(EventType.DESTROYED)){
+							sampleEntityService.destroySample(s);
+						}else if(s.getLogElement().getEvent().equals(EventType.DEPRECATED)){
+							sampleEntityService.deprecateSample(s);
+						}else if(s.getLogElement().getEvent().equals(EventType.UPDATED)){
+							sampleEntityService.updateSample(s,usr);
+						}
+						mintEventLog.setDatabaseLog(DatabaseErrorCode.UPDATE_SUCCESS, null);
+						mintEventLogs.add(mintEventLog);
+					}catch(Exception e){
+						mintEventLog.setDatabaseLog(DatabaseErrorCode.UPDATE_ERROR, e.getMessage());
+						mintEventLogs.add(mintEventLog);
+						containsError=true;
+					}											
 					
 				}else{
-					mintEventLog.setLog(MintErrorCode.PREFIX_UNREGISTERED, null);
+					mintEventLog.setMintLog(MintErrorCode.PREFIX_UNREGISTERED, null);
+					containsError=true;
 				}
 			}
 			
 		}
-		return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.OK);
+		if(containsError){
+			return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.BAD_REQUEST);
+		}else{
+			return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.OK);
+		}
+		
 
 	
 	}

@@ -27,6 +27,8 @@ public class MintService {
 	
 	private  final static Charset DEFAULT_ENCODING = Charset.forName("UTF8");
 	
+	private final String IGSN_TEST_PREFIX ="10273/TEST/";
+	
 	@Value("#{configProperties['IGSN_REGISTRY_URL']}")
 	private String IGSN_REGISTRY_URL;
 
@@ -39,28 +41,43 @@ public class MintService {
 	@Value("#{configProperties['IGSN_REGISTRY_PASSWORD']}")
 	private String IGSN_PASSWORD;
 	
+	/**
+	 * 
+	 * @param sampleNumber
+	 * @param landingPage
+	 * @param timeStamp
+	 * @param testMode
+	 * @param event
+	 * @return - the IGSN Number minted.
+	 * @throws Exception
+	 */
 	public String createRegistryXML(String sampleNumber, String landingPage, String timeStamp, boolean testMode,
-			String event) {
-				
+			String event) throws Exception {
+			
+		String IGSNPrefix = testMode?IGSN_TEST_PREFIX:IGSN_PREFIX;
+		
 		ByteArrayOutputStream retbody = null;
 		try {
 			
-
-			String mintcontent = "igsn=" + IGSN_PREFIX + sampleNumber;
+			String mintcontent = "igsn=" + IGSNPrefix + sampleNumber;
 			mintcontent += "\n";
 			mintcontent += "url=" + landingPage;
 			retbody = new ByteArrayOutputStream();
+			int responseCode = 0;
 			if (testMode) {
-				httpRequest(IGSN_REGISTRY_URL + "igsn?testMode=true", mintcontent.getBytes(), retbody, "POST");
+				responseCode = httpRequest(IGSN_REGISTRY_URL + "igsn", mintcontent.getBytes(), retbody, "POST");
 			} else {
-				httpRequest(IGSN_REGISTRY_URL + "igsn", mintcontent.getBytes(), retbody, "POST");
+				responseCode = httpRequest(IGSN_REGISTRY_URL + "igsn", mintcontent.getBytes(), retbody, "POST");
 			}
-			log.info("MINTING RESULTS OF " + sampleNumber + " , RESPONSE: " + retbody);
+			if(responseCode != 201){
+				throw new Exception("Minting unsuccessful:" + retbody.toString());
+			}
 		} catch (Exception e) {
 			log.info("Error: " + e.getMessage());
 			e.printStackTrace();
+			throw e;
 		}
-		return retbody.toString();
+		return IGSNPrefix + sampleNumber;
 	}
 	
 	private int httpRequest(String serviceurl, byte[] body, OutputStream retbody, String method)
@@ -105,6 +122,7 @@ public class MintService {
 			con.connect();
 		} catch (IOException e) {
 			geterrorstream = true;
+			throw e;
 		}
 
 		try {

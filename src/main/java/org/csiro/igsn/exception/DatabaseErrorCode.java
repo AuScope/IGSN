@@ -1,10 +1,9 @@
 package org.csiro.igsn.exception;
 
-public enum MintErrorCode {
-	
-	PREFIX_UNREGISTERED(101),
-	MINT_FAILURE(102),	
-	MINT_SUCCESS(200);
+public enum DatabaseErrorCode {
+		
+	UPDATE_ERROR(103),
+	UPDATE_SUCCESS(200);
 	
 	
 	
@@ -12,7 +11,7 @@ public enum MintErrorCode {
 
 	private final int number;
  
-	 private MintErrorCode(int number) {
+	 private DatabaseErrorCode(int number) {
 	   this.number = number;
 	 }
 	 
@@ -25,12 +24,10 @@ public enum MintErrorCode {
 	 public String getMessage() {
 		 String message ="";
 		 switch(number){
-		 	case 101: message="Prefix is unregistered to the user";
+		 	case 103: message="Error updating the database, please try again later.";
 		 		break;
-		 	case 102: message="Error attempting to Mint from registery";
+		 	case 200: message="Database successfully updated.";
 	 			break;			 	
-		 	case 200: message="Mint Successful";
-				break;	
 			default: message="Error not capture, please send a sample of your file to cg-admin@csiro.au";	
  				break;
 		 }
