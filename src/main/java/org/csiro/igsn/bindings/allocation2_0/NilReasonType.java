@@ -8,9 +8,6 @@
 
 package org.csiro.igsn.bindings.allocation2_0;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -19,20 +16,15 @@ import javax.xml.bind.annotation.XmlType;
  
  * 
  */
-@XmlType(name = "nilReasonType")
-@XmlEnum
 public enum NilReasonType {
 
-    @XmlEnumValue("http://www.opengis.net/def/nil/OGC/0/inapplicable")
-    INAPPLICABLE("inapplicable"),
-    @XmlEnumValue("http://www.opengis.net/def/nil/OGC/0/missing")
-    MISSING("missing"),
-    @XmlEnumValue("http://www.opengis.net/def/nil/OGC/0/template")
-    TEMPLATE("template"),
-    @XmlEnumValue("http://www.opengis.net/def/nil/OGC/0/unknown")
-    UNKNOWN("unknown"),
-    @XmlEnumValue("http://www.opengis.net/def/nil/OGC/0/withheld")
-    WITHHELD("withheld");
+   
+    INAPPLICABLE("http://www.opengis.net/def/nil/OGC/0/inapplicable"),    
+    MISSING("http://www.opengis.net/def/nil/OGC/0/missing"),   
+    TEMPLATE("http://www.opengis.net/def/nil/OGC/0/template"),   
+    UNKNOWN("http://www.opengis.net/def/nil/OGC/0/unknown"),  
+    WITHHELD("http://www.opengis.net/def/nil/OGC/0/withheld");
+    
     private final String value;
 
     NilReasonType(String v) {

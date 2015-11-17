@@ -24,6 +24,7 @@ public class SampleCollector implements java.io.Serializable {
 	private Sample sample;
 	private String collector;
 	private String collectoridentifier;
+	
 
 	public SampleCollector() {
 	}
@@ -38,6 +39,7 @@ public class SampleCollector implements java.io.Serializable {
 		this.sample = sample;
 		this.collector = collector;
 		this.collectoridentifier = collectoridentifier;
+		
 	}
 
 	@Id
@@ -79,5 +81,7 @@ public class SampleCollector implements java.io.Serializable {
 	public void setCollectoridentifier(String collectoridentifier) {
 		this.collectoridentifier = collectoridentifier;
 	}
+
+
 
 }

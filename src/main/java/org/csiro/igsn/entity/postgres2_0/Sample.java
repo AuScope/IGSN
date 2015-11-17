@@ -79,6 +79,9 @@ public class Sample implements java.io.Serializable {
 	private Date modified;
 	private Boolean ispublic;
 	private String elevationUnits;
+	private String samplinglocNilreason;
+	private String samplingtimeNilreason;
+	
 	private Set<CvSampletype> cvSampletypes = new HashSet<CvSampletype>(0);
 	private Set<Samplecuration> samplecurations = new HashSet<Samplecuration>(0);
 	private Set<Samplingfeatures> samplingfeatures = new HashSet<Samplingfeatures>(
@@ -449,5 +452,25 @@ public class Sample implements java.io.Serializable {
 	public void setElevationUnits(String elevationUnits) {
 		this.elevationUnits = elevationUnits;
 	}
+	
+	@Column(name = "samplingloc_nilreason", length = 100)
+	public String getSamplinglocNilreason() {
+		return samplinglocNilreason;
+	}
+
+	public void setSamplinglocNilreason(String samplinglocNilreason) {
+		this.samplinglocNilreason = samplinglocNilreason;
+	}
+
+	@Column(name = "samplingtime_nilreason", length = 100)
+	public String getSamplingtimeNilreason() {
+		return samplingtimeNilreason;
+	}
+
+	public void setSamplingtimeNilreason(String samplingtimeNilreason) {
+		this.samplingtimeNilreason = samplingtimeNilreason;
+	}
+	
+
 
 }

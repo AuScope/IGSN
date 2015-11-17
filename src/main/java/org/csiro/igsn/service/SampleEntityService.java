@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.xml.bind.JAXBElement;
 
 import org.csiro.igsn.bindings.allocation2_0.EventType;
 import org.csiro.igsn.bindings.allocation2_0.IdentifierType;
@@ -18,10 +19,16 @@ import org.csiro.igsn.bindings.allocation2_0.ObjectFactory;
 import org.csiro.igsn.bindings.allocation2_0.RelatedIdentifierType;
 import org.csiro.igsn.bindings.allocation2_0.RelationType;
 import org.csiro.igsn.bindings.allocation2_0.Samples;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.MaterialTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.RelatedResources.RelatedResourceIdentifier;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors.Collector;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curator;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.Feature;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingLocation;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingMethod;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingTime;
 import org.csiro.igsn.bindings.allocation2_0.SpatialType;
 import org.csiro.igsn.entity.postgres2_0.CvRelatedIdentifiertype;
 import org.csiro.igsn.entity.postgres2_0.CvResourceRelationshiptype;
@@ -48,10 +55,12 @@ import com.vividsolutions.jts.geom.Point;
 public class SampleEntityService {
 	
 	ControlledValueEntityService controlledValueEntityService;
+	ObjectFactory objectFactory;
 	
 	@Autowired
 	public SampleEntityService(ControlledValueEntityService controlledValueEntityService){
 		this.controlledValueEntityService = controlledValueEntityService;
+		this.objectFactory = new ObjectFactory();
 	}
 
 	public ResponseEntity<? extends Object> getSampleMetadataByIGSN(String igsn) throws Exception {
@@ -111,10 +120,16 @@ public class SampleEntityService {
 		
 		//VT: Set Material Type
 		Samples.Sample.MaterialTypes materialType = new Samples.Sample.MaterialTypes();
+		JAXBElement<MaterialTypes> materialTypeJAXBElement = this.objectFactory.createSamplesSampleMaterialTypes(materialType);		
 		for(CvSamplematerial sampleMaterial : sampleEntity.getCvSamplematerials()){
-			materialType.getMaterialType().add(sampleMaterial.getMaterialidentifier());
+			if(NilReasonType.match(sampleMaterial.getMaterialidentifier())){
+				materialType.setNilReason(sampleMaterial.getMaterialidentifier());
+				materialTypeJAXBElement.setNil(true);
+			}else{
+				materialType.getMaterialType().add(sampleMaterial.getMaterialidentifier());
+			}			
 		}				
-		sampleXml.setMaterialTypes(materialType);
+		sampleXml.setMaterialTypes(materialTypeJAXBElement);
 		
 		//VT: Set other name - DB store othername in 1:1 with sample
 		if(sampleEntity.getOthername()!=null){
@@ -141,13 +156,20 @@ public class SampleEntityService {
 		
 		//VT: Set Sample Collector
 		Samples.Sample.SampleCollectors sampleCollectors = new Samples.Sample.SampleCollectors();
+		JAXBElement<SampleCollectors> sampleCollectorJAXBElement = this.objectFactory.createSamplesSampleSampleCollectors(sampleCollectors);
 		for(SampleCollector sampleCollector: sampleEntity.getSampleCollectors()){
-			Collector collector = new Collector();
-			collector.setCollectorIdentifier(sampleCollector.getCollectoridentifier());
-			collector.setValue(sampleCollector.getCollector());
-			sampleCollectors.getCollector().add(collector);
+			if(NilReasonType.match(sampleCollector.getCollector())){
+				sampleCollectors.setNilReason(sampleCollector.getCollector());
+				sampleCollectorJAXBElement.setNil(true);
+			}else{
+				Collector collector = new Collector();
+				collector.setCollectorIdentifier(sampleCollector.getCollectoridentifier());
+				collector.setValue(sampleCollector.getCollector());
+				sampleCollectors.getCollector().add(collector);
+			}
+			
 		}		
-		sampleXml.setSampleCollectors(sampleCollectors);
+		sampleXml.setSampleCollectors(sampleCollectorJAXBElement);
 		
 		//VT: Sample Curation
 		Samples.Sample.SampleCuration sampleCurationXml = new Samples.Sample.SampleCuration();
@@ -178,17 +200,18 @@ public class SampleEntityService {
 		
 		//VT: Sample Type
 		Samples.Sample.SampleTypes sampleTypesXml = new Samples.Sample.SampleTypes();
-		
+		JAXBElement<SampleTypes> sampleTypeJAXBElement = this.objectFactory.createSamplesSampleSampleTypes(sampleTypesXml);
 		for(CvSampletype cst : sampleEntity.getCvSampletypes()){
 			if(NilReasonType.match(cst.getSampletypeidentifier())){
-				sampleTypesXml.setNilReason(cst.getSampletypeidentifier());
+				sampleTypesXml.setNilReason(cst.getSampletypeidentifier());				
 				sampleTypesXml.getSampleType().add(null);
+				sampleTypeJAXBElement.setNil(true);
 				break;
 			}else{
 				sampleTypesXml.getSampleType().add(cst.getSampletypeidentifier());
 			}
 		}										
-		sampleXml.setSampleTypes(sampleTypesXml);		
+		sampleXml.setSampleTypes(sampleTypeJAXBElement);		
 		
 		
 		sampleXml.setSamplingCampaign(sampleEntity.getSamplingcampaign());
@@ -228,34 +251,55 @@ public class SampleEntityService {
 		}
 		
 		//VT:Sampling location
-		Samples.Sample.SamplingLocation samplingLocation = new Samples.Sample.SamplingLocation();		
-		Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation();
-		//VT: sample elevation
-		elevation.setDatum(sampleEntity.getVerticaldatum());
-		elevation.setUnits(sampleEntity.getElevationUnits());
-		elevation.setValue(sampleEntity.getElevation());
-		if(elevation.getDatum()!=null || elevation.getUnits() != null || elevation.getValue()!=null){
-			samplingLocation.setElevation(elevation);
-		}
+		Samples.Sample.SamplingLocation samplingLocation = new Samples.Sample.SamplingLocation();	
+		JAXBElement<SamplingLocation> samplingLocationJAXBElement = this.objectFactory.createSamplesSampleSamplingLocation(samplingLocation);
 		
-		samplingLocation.setLocality(sampleEntity.getLocality());
+		if(sampleEntity.getSamplinglocNilreason()==null){
+			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation();
+			//VT: sample elevation
+			elevation.setDatum(sampleEntity.getVerticaldatum());
+			elevation.setUnits(sampleEntity.getElevationUnits());
+			elevation.setValue(sampleEntity.getElevation());
+			if(elevation.getDatum()!=null || elevation.getUnits() != null || elevation.getValue()!=null){
+				samplingLocation.setElevation(elevation);
+			}		
+			samplingLocation.setLocality(sampleEntity.getLocality());
+			
+			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt();
+			wkt.setSrs(sampleEntity.getSamplinglocsrs());
+			wkt.setSpatialType(SpatialType.POINT);
+			wkt.setValue(sampleEntity.getSamplinglocgeom().getCoordinate().y + " " + sampleEntity.getSamplinglocgeom().getCoordinate().x);
+			samplingLocation.setWkt(wkt);
+		}else{
+			samplingLocation.setNilReason(sampleEntity.getSamplinglocNilreason());
+			samplingLocationJAXBElement.setNil(true);
+		}						
+		sampleXml.setSamplingLocation(samplingLocationJAXBElement);
 		
-		Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt();
-		wkt.setSrs(sampleEntity.getSamplinglocsrs());
-		wkt.setSpatialType(SpatialType.POINT);
-		wkt.setValue(sampleEntity.getSamplinglocgeom().getCoordinate().y + " " + sampleEntity.getSamplinglocgeom().getCoordinate().x);
-		samplingLocation.setWkt(wkt);
-				
-		sampleXml.setSamplingLocation(samplingLocation);
-				
+
+		//VT:SamplingMethod		
 		Samples.Sample.SamplingMethod samplingMethod= new Samples.Sample.SamplingMethod();
-		samplingMethod.setValue(sampleEntity.getCvSamplingmethod().getMethodidentifier());
-		sampleXml.setSamplingMethod(samplingMethod);//VT: TODO- check null
-		if(sampleEntity.getSamplingstart()!=null){
+		JAXBElement<SamplingMethod> samplingMethodJAXBElement = this.objectFactory.createSamplesSampleSamplingMethod(samplingMethod);
+		if(NilReasonType.match(sampleEntity.getCvSamplingmethod().getMethodidentifier())){
+			samplingMethod.setNilReason(sampleEntity.getCvSamplingmethod().getMethodidentifier());
+			samplingMethodJAXBElement.setNil(true);
+		}else{
+			samplingMethod.setValue(sampleEntity.getCvSamplingmethod().getMethodidentifier());
+		}		
+		sampleXml.setSamplingMethod(samplingMethodJAXBElement);//VT: TODO- check null
+		
+		//VT:SamplingTime
+		if(sampleEntity.getSamplingtimeNilreason()!=null){
 			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
 			cal.setTime(sampleEntity.getSamplingstart());			    
 			samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
-			sampleXml.setSamplingTime(samplingTime);
+			sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
+		}else{	
+			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();	
+			JAXBElement<SamplingTime> samplingTimeJAXBElement = this.objectFactory.createSamplesSampleSamplingTime(samplingTime);
+			samplingTime.setNilReason(sampleEntity.getSamplingtimeNilreason());
+			samplingTimeJAXBElement.setNil(true);
+			sampleXml.setSamplingTime(samplingTimeJAXBElement);
 		}
 		
 		return sampleXml;
@@ -317,13 +361,16 @@ public class SampleEntityService {
 		
 		DateFormat df =new SimpleDateFormat("yyyy");
 		
-		//VT:Sampling Method
-		CvSamplingmethod samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod().getValue());
+		//VT:Sampling Method		
+		CvSamplingmethod samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod().getValue().getValue());
 		if(samplingMethod == null){
-			samplingMethod = new CvSamplingmethod(sampleXml.getSamplingMethod().getValue(),"");
+			samplingMethod = new CvSamplingmethod(sampleXml.getSamplingMethod().getValue().getValue(),"");
 			em.persist(samplingMethod);//VT:TODO sort this out, Sampling Method should be a controlled list.
-		}
+		}			
 		sampleEntity.setCvSamplingmethod(samplingMethod);
+		
+		
+		
 		sampleEntity.setSamplename(sampleXml.getSampleName());
 		try{
 			sampleEntity.setOthername(sampleXml.getOtherNames().getOtherName().get(0));//VT database only support 1 other name;
@@ -342,34 +389,43 @@ public class SampleEntityService {
 	
 		sampleEntity.setPurpose(sampleXml.getPurpose());
 		
-		
-		String[] samplingLocationStrPoint = sampleXml.getSamplingLocation().getWkt().getValue().split(" ");
-		Point samplinglocgeom = (Point)(SpatialUtilities.wktToGeometry(samplingLocationStrPoint[0], samplingLocationStrPoint[1]));		
-		sampleEntity.setSamplinglocgeom(samplinglocgeom);
-		sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getWkt().getSrs());
-		
-		if(sampleXml.getSamplingLocation().getElevation()!=null){
-			sampleEntity.setElevation(sampleXml.getSamplingLocation().getElevation().getValue());
+		//VT: SamplingLocation
+		if(sampleXml.getSamplingLocation().isNil()){
+			sampleEntity.setSamplinglocNilreason(sampleXml.getSamplingLocation().getValue().getNilReason());
 		}else{
-			sampleEntity.setElevation(null);
+			String[] samplingLocationStrPoint = sampleXml.getSamplingLocation().getValue().getWkt().getValue().split(" ");
+			Point samplinglocgeom = (Point)(SpatialUtilities.wktToGeometry(samplingLocationStrPoint[0], samplingLocationStrPoint[1]));		
+			sampleEntity.setSamplinglocgeom(samplinglocgeom);
+			sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getValue().getWkt().getSrs());
+			
+			if(sampleXml.getSamplingLocation().getValue().getElevation()!=null){
+				sampleEntity.setElevation(sampleXml.getSamplingLocation().getValue().getElevation().getValue());
+			}else{
+				sampleEntity.setElevation(null);
+			}
+			
+			if(sampleXml.getSamplingLocation().getValue().getElevation()!=null){
+				sampleEntity.setVerticaldatum(sampleXml.getSamplingLocation().getValue().getElevation().getDatum());
+			}else{
+				sampleEntity.setVerticaldatum(null);
+			}	
+			
+			if(sampleXml.getSamplingLocation().getValue().getElevation()!=null){
+				sampleEntity.setElevationUnits(sampleXml.getSamplingLocation().getValue().getElevation().getUnits());
+			}else{
+				sampleEntity.setElevationUnits(null);
+			}
+			sampleEntity.setLocality(sampleXml.getSamplingLocation().getValue().getLocality());
 		}
 		
-		if(sampleXml.getSamplingLocation().getElevation()!=null){
-			sampleEntity.setVerticaldatum(sampleXml.getSamplingLocation().getElevation().getDatum());
-		}else{
-			sampleEntity.setVerticaldatum(null);
-		}	
 		
-		if(sampleXml.getSamplingLocation().getElevation()!=null){
-			sampleEntity.setElevationUnits(sampleXml.getSamplingLocation().getElevation().getUnits());
+		//VT: SamplingTime
+		if(sampleXml.getSamplingTime().isNil()){
+			sampleEntity.setSamplingtimeNilreason(sampleXml.getSamplingTime().getValue().getNilReason());
 		}else{
-			sampleEntity.setElevationUnits(null);
+			sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getValue().getTimeInstant()));
 		}
-		
-		
-		sampleEntity.setLocality(sampleXml.getSamplingLocation().getLocality());
-		
-		sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getTimeInstant()));	
+			
 		
 		
 		sampleEntity.setSamplingcampaign(sampleXml.getSamplingCampaign());
@@ -391,11 +447,11 @@ public class SampleEntityService {
 		
 		//VT: Sample types
 		Set<CvSampletype> cvSampletypes = new HashSet<CvSampletype>();
-		if(sampleXml.getSampleTypes()==null){
-			cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleXml.getSampleTypes().getNilReason()));
+		if(sampleXml.getSampleTypes().isNil()){
+			cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleXml.getSampleTypes().getValue().getNilReason()));
 			sampleEntity.setCvSampletypes(cvSampletypes);
 		}else{
-			for(String sampleType:sampleXml.getSampleTypes().getSampleType()){			
+			for(String sampleType:sampleXml.getSampleTypes().getValue().getSampleType()){			
 				cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleType));
 			}
 			sampleEntity.setCvSampletypes(cvSampletypes);
@@ -449,18 +505,17 @@ public class SampleEntityService {
 		
 		//VT:SampleCollector
 		Set<SampleCollector> sampleCollectors = new HashSet<SampleCollector>();
-		for(Collector sampleCollector:sampleXml.getSampleCollectors().getCollector()){
-			if(sampleCollector != null){
-				sampleCollectors.add(new SampleCollector(sampleEntity,sampleCollector.getValue(),sampleCollector.getCollectorIdentifier()));
-			}
-		}
-		if(sampleCollectors.isEmpty()){
-			sampleEntity.setSampleCollectors(null);
+		if(sampleXml.getSampleCollectors().isNil()){
+			sampleCollectors.add(new SampleCollector(sampleEntity,sampleXml.getSampleCollectors().getValue().getNilReason()));
+			sampleEntity.setSampleCollectors(sampleCollectors);
 		}else{
+			for(Collector sampleCollector:sampleXml.getSampleCollectors().getValue().getCollector()){
+				if(sampleCollector != null){
+					sampleCollectors.add(new SampleCollector(sampleEntity,sampleCollector.getValue(),sampleCollector.getCollectorIdentifier()));
+				}
+			}
 			sampleEntity.setSampleCollectors(sampleCollectors);
 		}
-		
-		
 		
 		
 		//VT:SampleResource
@@ -477,16 +532,17 @@ public class SampleEntityService {
 		
 		
 		//VT:SampleMaterial
-		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();			
-		for(String sampleMaterial:sampleXml.getMaterialTypes().getMaterialType()){ 
-			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleMaterial));
-		}
-		if(cvSamplematerials.isEmpty()){
-			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleXml.getMaterialTypes().getNilReason()));
+		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();	
+		if(sampleXml.getMaterialTypes().isNil()){
+			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleXml.getMaterialTypes().getValue().getNilReason()));
 			sampleEntity.setCvSamplematerials(cvSamplematerials);
 		}else{
+			for(String sampleMaterial:sampleXml.getMaterialTypes().getValue().getMaterialType()){ 
+				cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleMaterial));
+			}
 			sampleEntity.setCvSamplematerials(cvSamplematerials);
 		}
+		
 		
 
 	}
