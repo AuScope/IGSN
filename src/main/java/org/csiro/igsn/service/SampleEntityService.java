@@ -13,6 +13,7 @@ import javax.persistence.NoResultException;
 
 import org.csiro.igsn.bindings.allocation2_0.EventType;
 import org.csiro.igsn.bindings.allocation2_0.IdentifierType;
+import org.csiro.igsn.bindings.allocation2_0.NilReasonType;
 import org.csiro.igsn.bindings.allocation2_0.ObjectFactory;
 import org.csiro.igsn.bindings.allocation2_0.RelatedIdentifierType;
 import org.csiro.igsn.bindings.allocation2_0.RelationType;
@@ -82,9 +83,13 @@ public class SampleEntityService {
 		sampleNumberXml.setValue(sampleEntity.getIgsn());
 		
 		
+		Samples.Sample.IsPublic isPublic = new Samples.Sample.IsPublic();
+		isPublic.setValue(sampleEntity.getIspublic());
+		sampleXml.setIsPublic(isPublic);
 		
-		sampleXml.setIsPublic(sampleEntity.getIspublic());
-		sampleXml.setLandingPage(sampleEntity.getLandingpage());	
+		Samples.Sample.LandingPage landingPage = new Samples.Sample.LandingPage();
+		landingPage.setValue(sampleEntity.getLandingpage());
+		sampleXml.setLandingPage(landingPage);	
 		sampleXml.setComments(sampleEntity.getComment());
 		
 		//VT: Set classification
@@ -172,9 +177,16 @@ public class SampleEntityService {
 						
 		
 		//VT: Sample Type
-		Samples.Sample.SampleTypes sampleTypesXml = new Samples.Sample.SampleTypes();		
+		Samples.Sample.SampleTypes sampleTypesXml = new Samples.Sample.SampleTypes();
+		
 		for(CvSampletype cst : sampleEntity.getCvSampletypes()){
-			sampleTypesXml.getSampleType().add(cst.getSampletypeidentifier());
+			if(NilReasonType.match(cst.getSampletypeidentifier())){
+				sampleTypesXml.setNilReason(cst.getSampletypeidentifier());
+				sampleTypesXml.getSampleType().add(null);
+				break;
+			}else{
+				sampleTypesXml.getSampleType().add(cst.getSampletypeidentifier());
+			}
 		}										
 		sampleXml.setSampleTypes(sampleTypesXml);		
 		
@@ -216,8 +228,7 @@ public class SampleEntityService {
 		}
 		
 		//VT:Sampling location
-		Samples.Sample.SamplingLocation samplingLocation = new Samples.Sample.SamplingLocation();
-		
+		Samples.Sample.SamplingLocation samplingLocation = new Samples.Sample.SamplingLocation();		
 		Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation();
 		//VT: sample elevation
 		elevation.setDatum(sampleEntity.getVerticaldatum());
@@ -237,7 +248,9 @@ public class SampleEntityService {
 				
 		sampleXml.setSamplingLocation(samplingLocation);
 				
-		sampleXml.setSamplingMethod(sampleEntity.getCvSamplingmethod().getMethodidentifier());
+		Samples.Sample.SamplingMethod samplingMethod= new Samples.Sample.SamplingMethod();
+		samplingMethod.setValue(sampleEntity.getCvSamplingmethod().getMethodidentifier());
+		sampleXml.setSamplingMethod(samplingMethod);//VT: TODO- check null
 		if(sampleEntity.getSamplingstart()!=null){
 			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
 			cal.setTime(sampleEntity.getSamplingstart());			    
@@ -305,9 +318,9 @@ public class SampleEntityService {
 		DateFormat df =new SimpleDateFormat("yyyy");
 		
 		//VT:Sampling Method
-		CvSamplingmethod samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod());
+		CvSamplingmethod samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod().getValue());
 		if(samplingMethod == null){
-			samplingMethod = new CvSamplingmethod(sampleXml.getSamplingMethod(),"");
+			samplingMethod = new CvSamplingmethod(sampleXml.getSamplingMethod().getValue(),"");
 			em.persist(samplingMethod);//VT:TODO sort this out, Sampling Method should be a controlled list.
 		}
 		sampleEntity.setCvSamplingmethod(samplingMethod);
@@ -318,7 +331,7 @@ public class SampleEntityService {
 			//VT: Do nothing because field is not mandatory
 		}
 		sampleEntity.setIgsn(sampleXml.getSampleNumber().getValue());
-		sampleEntity.setLandingpage(sampleXml.getLandingPage());
+		sampleEntity.setLandingpage(sampleXml.getLandingPage().getValue());
 		try{
 			sampleEntity.setClassification(sampleXml.getClassification().getValue());
 			sampleEntity.setClassificationidentifier(sampleXml.getClassification().getClassificationIdentifier());
@@ -373,22 +386,21 @@ public class SampleEntityService {
 			sampleEntity.setCreated(new Date());
 		}
 		sampleEntity.setModified(new Date());
-		sampleEntity.setIspublic(sampleXml.isIsPublic());
+		sampleEntity.setIspublic(sampleXml.getIsPublic().isValue());
 		
-	
 		
 		//VT: Sample types
 		Set<CvSampletype> cvSampletypes = new HashSet<CvSampletype>();
-		for(String sampleType:sampleXml.getSampleTypes().getSampleType()){
-			cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleType));
-		}
-		if(cvSampletypes.isEmpty()){
-			sampleEntity.setCvSampletypes(null);
+		if(sampleXml.getSampleTypes()==null){
+			cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleXml.getSampleTypes().getNilReason()));
+			sampleEntity.setCvSampletypes(cvSampletypes);
 		}else{
+			for(String sampleType:sampleXml.getSampleTypes().getSampleType()){			
+				cvSampletypes.add(controlledValueEntityService.searchSampleType(sampleType));
+			}
 			sampleEntity.setCvSampletypes(cvSampletypes);
 		}
-		
-		
+
 		
 		//VT:Curator
 		Set<Samplecuration> samplecurations=new HashSet<Samplecuration>();
@@ -465,12 +477,13 @@ public class SampleEntityService {
 		
 		
 		//VT:SampleMaterial
-		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();		
-		for(String sampleMaterial:sampleXml.getMaterialTypes().getMaterialType()){
+		Set<CvSamplematerial> cvSamplematerials = new HashSet<CvSamplematerial>();			
+		for(String sampleMaterial:sampleXml.getMaterialTypes().getMaterialType()){ 
 			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleMaterial));
 		}
 		if(cvSamplematerials.isEmpty()){
-			sampleEntity.setCvSamplematerials(null);
+			cvSamplematerials.add(controlledValueEntityService.searchByMaterialidentifier(sampleXml.getMaterialTypes().getNilReason()));
+			sampleEntity.setCvSamplematerials(cvSamplematerials);
 		}else{
 			sampleEntity.setCvSamplematerials(cvSamplematerials);
 		}
