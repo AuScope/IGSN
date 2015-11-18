@@ -23,7 +23,7 @@ import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.MaterialTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.RelatedResources.RelatedResourceIdentifier;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors.Collector;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curator;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curation;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.Feature;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingLocation;
@@ -96,9 +96,8 @@ public class SampleEntityService {
 		isPublic.setValue(sampleEntity.getIspublic());
 		sampleXml.setIsPublic(isPublic);
 		
-		Samples.Sample.LandingPage landingPage = new Samples.Sample.LandingPage();
-		landingPage.setValue(sampleEntity.getLandingpage());
-		sampleXml.setLandingPage(landingPage);	
+
+		sampleXml.setLandingPage(sampleEntity.getLandingpage());	
 		sampleXml.setComments(sampleEntity.getComment());
 		
 		//VT: Set classification
@@ -174,13 +173,13 @@ public class SampleEntityService {
 		//VT: Sample Curation
 		Samples.Sample.SampleCuration sampleCurationXml = new Samples.Sample.SampleCuration();
 		for(Samplecuration sc : sampleEntity.getSamplecurations()){
-			Curator c= new Curator();
+			Curation c= new Curation();
 			
-			c.setCuratorName(sc.getCurator());
+			c.setCurator(sc.getCurator());
 			c.setCurationLocation(sc.getCurationlocation());
 			
 			//VT Set time - Linked to database curation start time
-			Curator.CurationTime curationTime= new Curator.CurationTime();
+			Curation.CurationTime curationTime= new Curation.CurationTime();
 			if(sc.getCurationstart()!=null){
 				cal.setTime(sc.getCurationstart());
 				curationTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));			
@@ -189,7 +188,7 @@ public class SampleEntityService {
 			
 		
 			//VT Set curator
-			sampleCurationXml.getCurator().add(c);
+			sampleCurationXml.getCuration().add(c);
 		}				
 		sampleXml.setSampleCuration(sampleCurationXml);		
 		
@@ -384,7 +383,7 @@ public class SampleEntityService {
 		}
 		
 		sampleEntity.setIgsn(sampleXml.getSampleNumber().getValue());
-		sampleEntity.setLandingpage(sampleXml.getLandingPage().getValue());
+		sampleEntity.setLandingpage(sampleXml.getLandingPage());
 		try{
 			sampleEntity.setClassification(sampleXml.getClassification().getValue());
 			sampleEntity.setClassificationidentifier(sampleXml.getClassification().getClassificationIdentifier());
@@ -466,9 +465,9 @@ public class SampleEntityService {
 		
 		//VT:Curator
 		Set<Samplecuration> samplecurations=new HashSet<Samplecuration>();
-		for(Curator curator:sampleXml.getSampleCuration().getCurator()){
+		for(Curation curator:sampleXml.getSampleCuration().getCuration()){
 			if(curator!=null){
-				samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCuratorName(),
+				samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCurator(),
 						curator.getCurationTime()==null || curator.getCurationTime().getTimeInstant()==null?null:df.parse(curator.getCurationTime().getTimeInstant()),
 						null,""));
 			}
