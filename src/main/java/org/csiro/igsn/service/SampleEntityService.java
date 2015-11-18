@@ -290,16 +290,16 @@ public class SampleEntityService {
 		
 		//VT:SamplingTime
 		if(sampleEntity.getSamplingtimeNilreason()!=null){
+			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();	
+			samplingTime.setNilReason(sampleEntity.getSamplingtimeNilreason());
+			JAXBElement<SamplingTime> samplingTimeJAXBElement = this.objectFactory.createSamplesSampleSamplingTime(samplingTime);
+			samplingTimeJAXBElement.setNil(true);
+			sampleXml.setSamplingTime(samplingTimeJAXBElement);			
+		}else{	
 			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
 			cal.setTime(sampleEntity.getSamplingstart());			    
 			samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
 			sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
-		}else{	
-			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();	
-			JAXBElement<SamplingTime> samplingTimeJAXBElement = this.objectFactory.createSamplesSampleSamplingTime(samplingTime);
-			samplingTime.setNilReason(sampleEntity.getSamplingtimeNilreason());
-			samplingTimeJAXBElement.setNil(true);
-			sampleXml.setSamplingTime(samplingTimeJAXBElement);
 		}
 		
 		return sampleXml;
@@ -362,7 +362,12 @@ public class SampleEntityService {
 		DateFormat df =new SimpleDateFormat("yyyy");
 		
 		//VT:Sampling Method		
-		CvSamplingmethod samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod().getValue().getValue());
+		CvSamplingmethod samplingMethod = null;
+		if(sampleXml.getSamplingMethod().isNil()){
+			samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod().getValue().getNilReason());
+		}else{
+			samplingMethod = controlledValueEntityService.search(sampleXml.getSamplingMethod().getValue().getValue());
+		}
 		if(samplingMethod == null){
 			samplingMethod = new CvSamplingmethod(sampleXml.getSamplingMethod().getValue().getValue(),"");
 			em.persist(samplingMethod);//VT:TODO sort this out, Sampling Method should be a controlled list.
@@ -375,8 +380,9 @@ public class SampleEntityService {
 		try{
 			sampleEntity.setOthername(sampleXml.getOtherNames().getOtherName().get(0));//VT database only support 1 other name;
 		}catch(NullPointerException e){
-			//VT: Do nothing because field is not mandatory
+			sampleEntity.setOthername(null);
 		}
+		
 		sampleEntity.setIgsn(sampleXml.getSampleNumber().getValue());
 		sampleEntity.setLandingpage(sampleXml.getLandingPage().getValue());
 		try{
@@ -611,6 +617,9 @@ public class SampleEntityService {
 	public void updateSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml, String user) throws Exception {
 		EntityManager em = JPAEntityManager.createEntityManager();
 		Sample sampleEntity = this.searchSampleByIGSN(sampleXml.getSampleNumber().getValue());
+		if(sampleEntity==null){
+			throw new Exception("Sample not found, unable to update: Change logElement event to submitted to add new record.");
+		}
 		try{
 			em.getTransaction().begin();
 			insertSample(sampleXml,user,em,sampleEntity);		

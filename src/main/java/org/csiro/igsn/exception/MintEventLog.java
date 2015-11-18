@@ -28,8 +28,16 @@ public class MintEventLog {
 		return mintStatus;
 	}
 	
+	public int getMintStatusCode(){
+		return mintStatus.getNumber();
+	}
+	
 	public DatabaseErrorCode getDatabaseStatus(){
 		return databaseStatus;
+	}
+	
+	public int getDatabaseStatusCode(){
+		return databaseStatus.getNumber();
 	}
 
 	public String getMintExceptionCause() {
