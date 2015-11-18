@@ -136,11 +136,9 @@ public class IGSNMintCtrl {
 				if(sampleStartsWithAllowedPrefix(allowedPrefix,s)){		
 					if(s.getLogElement().getEvent().equals(EventType.SUBMITTED)||s.getLogElement().getEvent().equals(EventType.UPDATED)){
 						try{
-							//String igsn=this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage().getValue(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());
-							
+							String igsn=this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());							
 							mintEventLog.setMintLog(MintErrorCode.MINT_SUCCESS, null);
-							//mintEventLog.setHandle("http://hdl.handle.net/"+igsn);
-							
+							mintEventLog.setHandle("http://hdl.handle.net/"+igsn);							
 						}catch(Exception e){
 							mintEventLog.setMintLog(MintErrorCode.MINT_FAILURE, e.getMessage());
 							mintEventLogs.add(mintEventLog);
