@@ -3,6 +3,7 @@ package org.csiro.igsn.web.controllers;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,19 +72,19 @@ public class IGSNMintCtrl {
 	
 	
 	@RequestMapping(value = "/test/mint", method = { RequestMethod.POST, RequestMethod.HEAD })
-	public  ResponseEntity<?> mintTest(@RequestBody Samples samples) {
-		ResponseEntity<?> result=this.mint(samples,true);
+	public  ResponseEntity<?> mintTest(@RequestBody Samples samples,Principal user) {
+		ResponseEntity<?> result=this.mint(samples,true,user);
 		return result;
 	}
 	
 	@RequestMapping(value = "/mint", method = { RequestMethod.POST, RequestMethod.HEAD } )
-	public  ResponseEntity<?> mint(@RequestBody Samples samples) {
+	public  ResponseEntity<?> mint(@RequestBody Samples samples,Principal user) {
 		
-		return this.mint(samples,false);
+		return this.mint(samples,false,user);
 		
 	}
 	
-	public ResponseEntity<?> mint(Samples samples, boolean test){
+	public ResponseEntity<?> mint(Samples samples, boolean test,Principal user){
 		
 		boolean isXMLValid = true;
 		
@@ -123,12 +124,8 @@ public class IGSNMintCtrl {
 		String usr = null;
 		List<MintEventLog> mintEventLogs = new ArrayList<MintEventLog>();
 		boolean containsError=false;
-		if (isXMLValid) {			
-			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
-					.getPrincipal();
-			usr = userDetails.getUsername();
-			
-			
+		if (isXMLValid) {						
+			usr = user.getName();
 			Set<Prefix> allowedPrefix = prefixEntityService.searchByUser(usr);			
 			
 			for (Sample s : samples.getSample()) {
@@ -168,7 +165,7 @@ public class IGSNMintCtrl {
 					}											
 					
 				}else{
-					mintEventLog.setMintLog(MintErrorCode.PREFIX_UNREGISTERED, null);
+					mintEventLog.setMintLog(MintErrorCode.PREFIX_UNREGISTERED, "The prefix is not registered to the user:" + user.getName());
 					containsError=true;
 				}
 			}

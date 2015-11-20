@@ -38,7 +38,7 @@ public  class SecurityConfig extends
         .and()
 			.authorizeRequests()
 				.antMatchers("/subnamespace/**").authenticated()
-				.antMatchers("/rest/**").authenticated()
+				.antMatchers("/metadata/**").authenticated()
 				.antMatchers("/igsn/**").authenticated()
 		.and()
 			.csrf().disable();

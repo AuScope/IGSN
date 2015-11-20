@@ -1,5 +1,7 @@
 package org.csiro.igsn.web.controllers;
 
+import java.security.Principal;
+
 import org.csiro.igsn.bindings.allocation2_0.Samples;
 import org.csiro.igsn.service.PrefixEntityService;
 import org.csiro.igsn.service.SampleEntityService;
@@ -30,16 +32,12 @@ public class MetaDataCtrl {
 	
 	
 	@RequestMapping(value = "/retrieve/{igsn}")
-	public ResponseEntity getMetadataByIGSN(@PathVariable("igsn") String sampleNumber) {
+	public ResponseEntity getMetadataByIGSN(@PathVariable("igsn") String sampleNumber,Principal user) {
 		ResponseEntity<? extends Object> response = null;
 		log.info("Get Metadata By Sample Id : " + sampleNumber);
 	
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (!(auth instanceof AnonymousAuthenticationToken)) {
-			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
-					.getAuthentication().getPrincipal();
-			userDetails.getUsername();
-			userDetails.getPassword();
+		
+		if (user!=null) {			
 			try {
 				response = sampleEntityService.getSampleMetadataByIGSN(sampleNumber);
 			} catch (Exception e) {

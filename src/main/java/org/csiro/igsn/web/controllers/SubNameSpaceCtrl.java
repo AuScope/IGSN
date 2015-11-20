@@ -1,6 +1,8 @@
 package org.csiro.igsn.web.controllers;
 
 
+import java.security.Principal;
+
 import org.apache.log4j.Logger;
 import org.csiro.igsn.service.PrefixEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,18 +30,17 @@ public class SubNameSpaceCtrl {
 	}
 	
 	@RequestMapping(value = "/list/all")
-	public  ResponseEntity<?> getAllSubnamespaces() {
+	public  ResponseEntity<?> getAllSubnamespaces(Principal user) {
 		
-		//List<Prefix> registrantPrefixList = null;
-		String usr = null;
-		String pwd = null;
+		
+		String usr = user.getName();
+	
 		ResponseEntity<?> response = null;
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
 			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
 					.getAuthentication().getPrincipal();
-			usr = userDetails.getUsername();
-			pwd = userDetails.getPassword();
+			usr = userDetails.getUsername();			
 		
 			try {
 				response = new ResponseEntity<Object>(prefixEntityService.listAllPrefix(), HttpStatus.OK);
@@ -56,20 +57,17 @@ public class SubNameSpaceCtrl {
 	// This request registers the subnamespace.
 		@RequestMapping(value = "/register/{prefix}", method = RequestMethod.GET)
 		public ResponseEntity<? extends Object> registerSubNameSpace(
-				@PathVariable("prefix") String prefix) {
+				@PathVariable("prefix") String prefix,Principal user) {
 			
 			String usr = null;
 			String pwd = null;
 			
 			ResponseEntity<String> response = null;
 
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			if (!(auth instanceof AnonymousAuthenticationToken)) {
-				UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
-						.getAuthentication().getPrincipal();
-				usr = userDetails.getUsername();
-				pwd = userDetails.getPassword();
-				
+			
+			if (user!=null) {			
+				usr = user.getName();
+								
 				try {
 					response = (ResponseEntity<String>) prefixEntityService.registerPrefix(usr, pwd, prefix);
 				} catch (Exception e) {
