@@ -6,6 +6,7 @@ package org.csiro.igsn.entity.postgres2_0;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,6 +14,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
@@ -39,20 +42,20 @@ public class Samplingfeatures implements java.io.Serializable {
 	private String verticaldatum;
 	private String featurelocality;
 	private String elevationUnits;
-	
+	private Set<Sampledfeatures> sampledfeatures = new HashSet<Sampledfeatures>(0);
 
 	public Samplingfeatures() {
 	}
 
 	public Samplingfeatures(String featurename) {
-		this.featureid = featureid;
+		
 		this.featurename = featurename;
 	}
 
 	public Samplingfeatures( CvSamplingfeature cvSamplingfeature,
 			String featurename, Point featuregeom, String featuresrs,
 			String elevation, String verticaldatum, String featurelocality,
-			String elevationUnits) {
+			String elevationUnits,Set<Sampledfeatures> sampledfeatures) {
 		
 		this.cvSamplingfeature = cvSamplingfeature;
 		this.featurename = featurename;
@@ -62,6 +65,7 @@ public class Samplingfeatures implements java.io.Serializable {
 		this.verticaldatum = verticaldatum;
 		this.featurelocality = featurelocality;
 		this.elevationUnits = elevationUnits;
+		this.sampledfeatures = sampledfeatures;
 	}
 
 	@Id
@@ -149,6 +153,16 @@ public class Samplingfeatures implements java.io.Serializable {
 
 	public void setElevationUnits(String elevationUnits) {
 		this.elevationUnits = elevationUnits;
+	}
+
+	@ManyToMany(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+	@JoinTable(name = "sampling_sampled_mapping", joinColumns = { @JoinColumn(name = "samplingfeature_id", nullable = false, updatable = false) }, inverseJoinColumns = { @JoinColumn(name = "sampledfeature_id", nullable = false, updatable = false) })
+	public Set<Sampledfeatures> getSampledfeatures() {
+		return sampledfeatures;
+	}
+
+	public void setSampledfeatures(Set<Sampledfeatures> sampledfeatures) {
+		this.sampledfeatures = sampledfeatures;
 	}
 
 

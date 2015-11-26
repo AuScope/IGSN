@@ -25,7 +25,8 @@ import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors.Collector;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curation;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleTypes;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.Feature;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.SamplingFeature;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures.SampledFeature;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingLocation;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingMethod;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingTime;
@@ -40,6 +41,7 @@ import org.csiro.igsn.entity.postgres2_0.Registrant;
 import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.entity.postgres2_0.SampleCollector;
 import org.csiro.igsn.entity.postgres2_0.Samplecuration;
+import org.csiro.igsn.entity.postgres2_0.Sampledfeatures;
 import org.csiro.igsn.entity.postgres2_0.Sampleresources;
 import org.csiro.igsn.entity.postgres2_0.Samplingfeatures;
 import org.csiro.igsn.entity.postgres2_0.Status;
@@ -220,9 +222,9 @@ public class SampleEntityService {
 		Samples.Sample.SamplingFeatures samplingFeatures = new Samples.Sample.SamplingFeatures();
 		for(Samplingfeatures sampleFeature:sampleEntity.getSamplingfeatures()){
 			
-			Samples.Sample.SamplingFeatures.Feature feature = new Samples.Sample.SamplingFeatures.Feature();
-			Samples.Sample.SamplingFeatures.Feature.FeatureLocation featureLocation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation();
-			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation();
+			Samples.Sample.SamplingFeatures.SamplingFeature feature = new Samples.Sample.SamplingFeatures.SamplingFeature();
+			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation featureLocation = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation();
+			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation();
 			//VT: elevation
 			elevation.setDatum(sampleFeature.getVerticaldatum());
 			elevation.setUnits(sampleFeature.getElevationUnits());
@@ -230,7 +232,7 @@ public class SampleEntityService {
 			featureLocation.setElevation(elevation);
 			
 			//VT: wkt
-			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt();
+			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
 			wkt.setSrs(sampleFeature.getFeaturesrs());
 			wkt.setSpatialType(SpatialType.POINT);
 			wkt.setValue(sampleFeature.getFeaturegeom().getCoordinate().y + " " + sampleFeature.getFeaturegeom().getCoordinate().x);			
@@ -238,14 +240,27 @@ public class SampleEntityService {
 			
 			featureLocation.setLocality(sampleFeature.getFeaturelocality());
 			
-			feature.setFeatureLocation(featureLocation);
-			feature.setFeatureName(sampleFeature.getFeaturename());
-			feature.setFeatureType(sampleFeature.getCvSamplingfeature().getIdentifier());
+			feature.setSamplingFeatureLocation(featureLocation);
+			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureName samplingFeatureName = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureName();
+			samplingFeatureName.setValue(sampleFeature.getFeaturename());
+			samplingFeatureName.setSamplingFeatureType(sampleFeature.getCvSamplingfeature().getIdentifier());
+			feature.setSamplingFeatureName(samplingFeatureName);
 			
-			samplingFeatures.getFeature().add(feature);
+			Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures sampledFeaturesXML = new Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures();
+			for(Sampledfeatures sampledFeature:sampleFeature.getSampledfeatures()){
+				
+				Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures.SampledFeature SampledFeatureXML= new Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures.SampledFeature();
+				SampledFeatureXML.setValue(sampledFeature.getFeaturename());
+				SampledFeatureXML.setSampledFeatureType(sampledFeature.getFeaturetype());
+				sampledFeaturesXML.getSampledFeature().add(SampledFeatureXML);
+			}
+			if(sampledFeaturesXML.getSampledFeature()!=null && !sampledFeaturesXML.getSampledFeature().isEmpty()){
+				feature.setSampledFeatures(sampledFeaturesXML);
+			}						
+			samplingFeatures.getSamplingFeature().add(feature);
 			
 		}		
-		if(!samplingFeatures.getFeature().isEmpty()){
+		if(!samplingFeatures.getSamplingFeature().isEmpty()){
 			sampleXml.setSamplingFeatures(samplingFeatures);
 		}
 		
@@ -254,7 +269,7 @@ public class SampleEntityService {
 		JAXBElement<SamplingLocation> samplingLocationJAXBElement = this.objectFactory.createSamplesSampleSamplingLocation(samplingLocation);
 		
 		if(sampleEntity.getSamplinglocNilreason()==null){
-			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Elevation();
+			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation();
 			//VT: sample elevation
 			elevation.setDatum(sampleEntity.getVerticaldatum());
 			elevation.setUnits(sampleEntity.getElevationUnits());
@@ -264,7 +279,7 @@ public class SampleEntityService {
 			}		
 			samplingLocation.setLocality(sampleEntity.getLocality());
 			
-			Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.Feature.FeatureLocation.Wkt();
+			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
 			wkt.setSrs(sampleEntity.getSamplinglocsrs());
 			wkt.setSpatialType(SpatialType.POINT);
 			wkt.setValue(sampleEntity.getSamplinglocgeom().getCoordinate().y + " " + sampleEntity.getSamplinglocgeom().getCoordinate().x);
@@ -482,22 +497,31 @@ public class SampleEntityService {
 		//VT: SamplingFeatures
 		Set<Samplingfeatures> samplingfeatures = new HashSet<Samplingfeatures>();
 		if(sampleXml.getSamplingFeatures()!=null){
-			for(Feature feature:sampleXml.getSamplingFeatures().getFeature()){
+			for(SamplingFeature feature:sampleXml.getSamplingFeatures().getSamplingFeature()){
 				if(feature !=null){
-					CvSamplingfeature cvSamplingfeature = controlledValueEntityService.searchSamplingfeatureByIdentifier(feature.getFeatureType());
+					CvSamplingfeature cvSamplingfeature = controlledValueEntityService.searchSamplingfeatureByIdentifier(feature.getSamplingFeatureName().getSamplingFeatureType());
 					Point featureLoc = null;
 					try{
-						String[] featureLocStrPoint = feature.getFeatureLocation().getWkt().getValue().split(" ");										
+						String[] featureLocStrPoint = feature.getSamplingFeatureLocation().getWkt().getValue().split(" ");										
 						 featureLoc = (Point)(SpatialUtilities.wktToGeometry(featureLocStrPoint[0], featureLocStrPoint[1]));
 					}catch(Exception e){
 						
-					}					
-					samplingfeatures.add(new Samplingfeatures(cvSamplingfeature,feature.getFeatureName(),featureLoc,
-							feature.getFeatureLocation()==null?null:feature.getFeatureLocation().getWkt().getSrs(),
-							feature.getFeatureLocation()==null || feature.getFeatureLocation().getElevation()==null?null:feature.getFeatureLocation().getElevation().getValue(),
-							feature.getFeatureLocation()==null || feature.getFeatureLocation().getElevation()==null?null:feature.getFeatureLocation().getElevation().getDatum(),
-							feature.getFeatureLocation()==null ?null:feature.getFeatureLocation().getLocality(),
-							feature.getFeatureLocation()==null || feature.getFeatureLocation().getElevation()==null?null:feature.getFeatureLocation().getElevation().getUnits()));
+					}
+					
+					 Set<Sampledfeatures> sampledfeatures = new HashSet<Sampledfeatures>();
+					 if(feature.getSampledFeatures()!=null){
+						 for(SampledFeature sampledFeatureXml: feature.getSampledFeatures().getSampledFeature()){
+							 sampledfeatures.add(new Sampledfeatures(sampledFeatureXml.getSampledFeatureType(), sampledFeatureXml.getValue()));
+						 }
+					 }
+							 
+					samplingfeatures.add(new Samplingfeatures(cvSamplingfeature,feature.getSamplingFeatureName().getValue(),featureLoc,
+							feature.getSamplingFeatureLocation()==null?null:feature.getSamplingFeatureLocation().getWkt().getSrs(),
+							feature.getSamplingFeatureLocation()==null || feature.getSamplingFeatureLocation().getElevation()==null?null:feature.getSamplingFeatureLocation().getElevation().getValue(),
+							feature.getSamplingFeatureLocation()==null || feature.getSamplingFeatureLocation().getElevation()==null?null:feature.getSamplingFeatureLocation().getElevation().getDatum(),
+							feature.getSamplingFeatureLocation()==null ?null:feature.getSamplingFeatureLocation().getLocality(),
+							feature.getSamplingFeatureLocation()==null || feature.getSamplingFeatureLocation().getElevation()==null?null:feature.getSamplingFeatureLocation().getElevation().getUnits(),
+							sampledfeatures.isEmpty()?null:sampledfeatures));
 				}
 			}
 		}
