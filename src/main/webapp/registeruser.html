@@ -1,0 +1,82 @@
+<!doctype html>
+<html ng-app="app">
+  <head>  	
+  	<script src="js/angular/angular.min.js"></script>
+  	<script src="js/angular/angular-route.min.js"></script>	
+  
+	<script src="js/angular-ui/ui-bootstrap/ui-bootstrap-tpls-0.13.3.min.js"></script>   
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>    
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    
+     	<!-- jquery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  	<script src="js/bootstrap.min.js"></script>
+    
+    <!-- IGSN js -->
+    <script src="js/igsn/controllers/controllers.js"></script>
+    
+  </head>
+  <body ng-controller="RegistrantCtrl" >
+  	
+ 
+  	
+  	
+  	<div class="container">
+	  <h2>Existing Registrant</h2>	              
+	  <table class="table table-hover">
+	    <thead>
+	      <tr>	      	
+	        <th>Name</th>
+	        <th>Email</th>
+	        <th>User Name</th>
+	        <th><span class="fa fa-expand"></span></th>
+	      </tr>
+	    </thead>
+	    <tbody>
+	      <tr ng-repeat="registrant in registrants">
+	        <td>{{registrant.registrantname}}</td>
+	        <td>{{registrant.registrantemail}}</td>
+	        <td>{{registrant.username}}</td>
+	        <td>
+	        	<div class="dropdown">
+				  <button class="btn btn-primary" id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				    	Prefix
+				    <span class="caret"></span>
+				  </button>
+				  <ul class="dropdown-menu" aria-labelledby="dLabel">
+				   <li>Prefixs</li>
+				   <li class="divider"></li>
+				   <li ng-repeat="prefix in registrant['prefixes']">{{prefix.prefix}}</li>
+				  </ul>
+				</div>
+			</td>
+	      </tr>
+	      
+	     
+	     
+	    </tbody>
+	  </table>
+	</div>
+
+	<div ng-show="authorizedUser">	    
+	    <div class="container">
+	    	<h4>Registrant</h4>
+		    <div class="form-group">
+		      <label>Name:</label>
+		      <input type="text" ng-model="submit.rname" class="form-control">
+		    </div>
+		    <div class="form-group">
+		      <label>Email:</label>
+		      <input type="text" ng-model="submit.email" class="form-control">
+		    </div>
+		    <div class="form-group">
+		      <label>Username:</label>
+		      <input type="text" ng-model="submit.username" class="form-control">
+		    </div>
+		    <button type="button" class="btn btn-default" ng-click="submit()">Submit</button>
+		 </div>    
+	</div>
+  </body>
+</html>

@@ -5,6 +5,7 @@ package org.csiro.igsn.entity.postgres2_0;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,6 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -22,6 +25,12 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "allocator")
+@NamedQueries({
+	@NamedQuery(
+			name="Allocator.search",
+		    query="SELECT a FROM Allocator a where a.username = :username"
+	)
+})	
 public class Allocator implements java.io.Serializable {
 
 	private int allocatorid;
@@ -135,7 +144,7 @@ public class Allocator implements java.io.Serializable {
 		this.isactive = isactive;
 	}
 
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "allocator_prefixes", joinColumns = { @JoinColumn(name = "allocator", nullable = false, updatable = false) }, inverseJoinColumns = { @JoinColumn(name = "prefixes", nullable = false, updatable = false) })
 	public Set<Prefix> getPrefixes() {
 		return this.prefixes;

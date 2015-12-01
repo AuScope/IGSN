@@ -19,14 +19,11 @@ public class PrefixEntityService {
 
 	
 	public List<Prefix> listAllPrefix(){
-
 		EntityManager em = JPAEntityManager.createEntityManager();
-		List<Prefix> result = em.createNamedQuery("Prefix.listAll",Prefix.class)
-	    //.setParameter("blah", blah)
+		List<Prefix> result = em.createNamedQuery("Prefix.listAll",Prefix.class)	 
 	    .getResultList();
 		em.close();		
 		return result;
-
 	}
 
 	public ResponseEntity<String> registerPrefix(String usr, String string,

@@ -40,6 +40,7 @@ public  class SecurityConfig extends
 				.antMatchers("/subnamespace/**").authenticated()
 				.antMatchers("/metadata/**").authenticated()
 				.antMatchers("/igsn/**").authenticated()
+				.antMatchers("/registeruser.html").authenticated()
 		.and()
 			.csrf().disable();
 //		 .and()
