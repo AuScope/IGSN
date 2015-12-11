@@ -10,8 +10,10 @@ package org.csiro.oai.binding;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
@@ -79,6 +81,12 @@ public class OAIPMHtype {
     protected ListIdentifiersType listIdentifiers;
     @XmlElement(name = "ListRecords")
     protected ListRecordsType listRecords;
+    
+    @XmlAttribute(name="xmlns:xsi")
+	String xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";  
+    
+    @XmlAttribute(name="xsi:schemaLocation")
+	String xmlns_schemaLocation = "http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd";
 
     /**
      * Gets the value of the responseDate property.

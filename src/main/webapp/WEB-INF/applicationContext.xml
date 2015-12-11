@@ -4,36 +4,17 @@
       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
 
 
-    <!-- This is the core threadpool shared by object instances throughout the portal -->
-    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="corePoolSize" value="5" />
-        <property name="maxPoolSize" value="5" />
-        <property name="queueCapacity" value="25" />
-    </bean>
-
-
-    <bean id="httpServiceCaller" class="org.auscope.portal.core.server.http.HttpServiceCaller">
-        <constructor-arg type="int" name="connectionTimeOut">
-            <value>900000</value>
-        </constructor-arg>
-    </bean>
-    
-    <!-- bean id="jaxbMarshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
-		<property name="contextPath" value="org.csiro.igsn.examples" />
-	</bean>
-
-	<bean id="marshallingHttpMessageConverter" class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter">
-		<property name="marshaller" ref="jaxbMarshaller" />
-		<property name="unmarshaller" ref="jaxbMarshaller" />
-	</bean>
-
-	<bean
-		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-		<property name="messageConverters">
-			<list>
-				<ref bean="marshallingHttpMessageConverter" />
-			</list>
-		</property>
-	</bean-->
+ <bean id="jaxbMarshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+  <property name="supportJaxbElementClass" value="true"/>
+  <property name="checkForXmlRootElement" value="false"/>  
+  <property name="packagesToScan">
+    <list>
+      <value>org.csiro</value>
+      <value>org.csiro.oai.binding.OAIPMHtype</value>
+      <value>org.csiro.oai.dc.binding.OaiDcType</value>
+    </list>
+  </property>
+</bean>
+   
 
 </beans>

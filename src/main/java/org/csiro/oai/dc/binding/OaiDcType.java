@@ -10,12 +10,16 @@ package org.csiro.oai.dc.binding;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlType;
+
+import org.csiro.igsn.bindings.allocation2_0.IdentifierType;
 
 
 /**
@@ -56,6 +60,13 @@ import javax.xml.bind.annotation.XmlType;
     "titleOrCreatorOrSubject"
 })
 public class OaiDcType {
+	
+		
+	@XmlAttribute(name="xmlns:xsi")
+	String xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";  
+	
+	@XmlAttribute(name="xsi:schemaLocation")
+	String xmlns_schemaLocation = "http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
 
     @XmlElementRefs({
         @XmlElementRef(name = "title", namespace = "http://purl.org/dc/elements/1.1/", type = JAXBElement.class, required = false),

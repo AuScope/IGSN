@@ -1,9 +1,10 @@
 package org.csiro.igsn.server;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportResource;
 
 
-
+@ImportResource(value = {"/WEB-INF/applicationContext.xml"})
 @Configuration
 public class AppConfig {
 	

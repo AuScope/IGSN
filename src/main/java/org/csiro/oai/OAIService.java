@@ -1,9 +1,13 @@
 package org.csiro.oai;
 
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
@@ -11,7 +15,6 @@ import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.entity.postgres2_0.SampleCollector;
 import org.csiro.igsn.entity.postgres2_0.Samplecuration;
 import org.csiro.igsn.entity.postgres2_0.Sampleresources;
-import org.csiro.igsn.service.SampleEntityService;
 import org.csiro.oai.binding.GetRecordType;
 import org.csiro.oai.binding.HeaderType;
 import org.csiro.oai.binding.MetadataType;
@@ -25,7 +28,6 @@ import org.csiro.oai.binding.StatusType;
 import org.csiro.oai.binding.VerbType;
 import org.csiro.oai.dc.binding.ElementType;
 import org.csiro.oai.dc.binding.OaiDcType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +35,10 @@ import org.springframework.stereotype.Service;
 public class OAIService {
 	
 	ObjectFactory oaiObjectFactory;
-	SampleEntityService sampleEntityService;
 	
-	SimpleDateFormat dateFormatter = new SimpleDateFormat("YYYY-MM-ddTHH:mm:ssZ");
+	
+	SimpleDateFormat dateFormatterLong = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssXXX");
+	SimpleDateFormat dateFormatterShort = new SimpleDateFormat("YYYY-MM-dd");
 	
 	@Value("#{configProperties['OAI_BASEURL_VALUE']}")
 	private String OAI_BASEURL_VALUE;
@@ -46,10 +49,11 @@ public class OAIService {
 	@Value("#{configProperties['OAI_CSIRO_IDENTIFIER_PREFIX']}")
 	private String OAI_CSIRO_IDENTIFIER_PREFIX;
 	
-	@Autowired
-	public OAIService(SampleEntityService sampleEntityService){
-		this.sampleEntityService=sampleEntityService;
+	
+	public OAIService(){
+		oaiObjectFactory = new ObjectFactory();
 	}
+
 	
 	public JAXBElement<OAIPMHtype> getBadVerb() throws DatatypeConfigurationException{
 		
@@ -77,11 +81,9 @@ public class OAIService {
 		return oaipmh;
 	}
 	
-	public JAXBElement<OAIPMHtype> getRecordOAI(String identifier, String metadataPrefix) throws DatatypeConfigurationException{
+	public JAXBElement<OAIPMHtype> getRecordOAI(Sample sample, String metadataPrefix) throws DatatypeConfigurationException, JAXBException{
 		
-		//VT: a identifier is madeup from OAI_CSIRO_IDENTIFIER_PREFIX + igsn.
-		Sample sample = sampleEntityService.searchSampleByIGSN(identifier.replace(OAI_CSIRO_IDENTIFIER_PREFIX, ""));
-		
+	
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
@@ -90,7 +92,7 @@ public class OAIService {
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
 		requestType.setVerb(VerbType.GET_RECORD);	
-		requestType.setIdentifier(identifier);
+		requestType.setIdentifier(OAI_CSIRO_IDENTIFIER_PREFIX + sample.getIgsn());
 		requestType.setMetadataPrefix(metadataPrefix);
 		requestType.setValue(OAI_BASEURL_VALUE);
 		oaiType.setRequest(requestType);
@@ -101,8 +103,8 @@ public class OAIService {
 		HeaderType headerType = new HeaderType();		
 		
 		//GetRecord header
-		headerType.setIdentifier(identifier);
-		headerType.setDatestamp(dateFormatter.format(sample.getModified()));
+		headerType.setIdentifier(OAI_CSIRO_IDENTIFIER_PREFIX + sample.getIgsn());
+		headerType.setDatestamp(dateFormatterShort.format(sample.getModified()));
 		if(sample.getStatusByRegistrationstatus().getStatuscode().equals("Deprecated")){
 			headerType.setStatus(StatusType.DELETED);
 		}				
@@ -117,7 +119,7 @@ public class OAIService {
 		return oaipmh;
 	}
 	
-	public MetadataType getDCMetaData(Sample sample){
+	public MetadataType getDCMetaData(Sample sample) throws JAXBException{
 		
 		org.csiro.oai.dc.binding.ObjectFactory dcObjectfactory = new org.csiro.oai.dc.binding.ObjectFactory();
 		OaiDcType oaiDcType = new OaiDcType();
@@ -155,7 +157,7 @@ public class OAIService {
 		
 		if(sample.getSamplingstart()!=null){
 			ElementType date = new ElementType();
-			date.setValue(dateFormatter.format(sample.getSamplingstart()));
+			date.setValue(dateFormatterLong.format(sample.getSamplingstart()));
 			oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createDate(date));
 		}
 		
@@ -176,6 +178,7 @@ public class OAIService {
 		JAXBElement<OaiDcType> oaiDc = dcObjectfactory.createDc(oaiDcType);		
 		MetadataType metaDataType = new MetadataType();
 		metaDataType.setAny(oaiDc);
+
 				
 		return metaDataType;
 	}
@@ -184,4 +187,5 @@ public class OAIService {
 		
 	}
 
+	
 }
