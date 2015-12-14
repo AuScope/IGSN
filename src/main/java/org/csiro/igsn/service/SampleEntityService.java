@@ -3,17 +3,26 @@ package org.csiro.igsn.service;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.xml.bind.JAXBElement;
 
 import org.csiro.igsn.bindings.allocation2_0.EventType;
 import org.csiro.igsn.bindings.allocation2_0.IdentifierType;
+import org.csiro.igsn.bindings.allocation2_0.JAXBConverter;
 import org.csiro.igsn.bindings.allocation2_0.NilReasonType;
 import org.csiro.igsn.bindings.allocation2_0.ObjectFactory;
 import org.csiro.igsn.bindings.allocation2_0.RelatedIdentifierType;
@@ -57,12 +66,12 @@ import com.vividsolutions.jts.geom.Point;
 public class SampleEntityService {
 	
 	ControlledValueEntityService controlledValueEntityService;
-	ObjectFactory objectFactory;
+	JAXBConverter jaxbConverter;
 	
 	@Autowired
 	public SampleEntityService(ControlledValueEntityService controlledValueEntityService){
 		this.controlledValueEntityService = controlledValueEntityService;
-		this.objectFactory = new ObjectFactory();
+		this.jaxbConverter = new JAXBConverter();
 	}
 
 	public ResponseEntity<? extends Object> getSampleMetadataByIGSN(String igsn) throws Exception {
@@ -82,244 +91,60 @@ public class SampleEntityService {
 	}
 	
 
-	public Samples.Sample SampleToXml(Sample sampleEntity) throws Exception{
-		
-		
-		Calendar cal = Calendar.getInstance();
-		
-		Samples.Sample sampleXml = new Samples.Sample();
-		Samples.Sample.SampleNumber sampleNumberXml = new Samples.Sample.SampleNumber();
-		
-		sampleNumberXml.setIdentifierType(IdentifierType.fromValue("igsn"));
-		sampleNumberXml.setValue(sampleEntity.getIgsn());
-		
-		
-		Samples.Sample.IsPublic isPublic = new Samples.Sample.IsPublic();
-		isPublic.setValue(sampleEntity.getIspublic());
-		sampleXml.setIsPublic(isPublic);
-		
-
-		sampleXml.setLandingPage(sampleEntity.getLandingpage());	
-		sampleXml.setComments(sampleEntity.getComment());
-		
-		//VT: Set classification
-		Samples.Sample.Classification classification = new Samples.Sample.Classification();
-		if(sampleEntity.getClassificationidentifier()!=null)
-			classification.setClassificationIdentifier(sampleEntity.getClassificationidentifier());
-		if(sampleEntity.getClassification()!=null)
-			classification.setValue(sampleEntity.getClassification());	
-		if(classification.getClassificationIdentifier()!=null || classification.getValue()!=null)
-			sampleXml.setClassification(classification);
-		
-		//VT: Log element - Not Needed
-		Samples.Sample.LogElement logElement = new Samples.Sample.LogElement();
-		logElement.setValue("Status:"+ sampleEntity.getStatusByRegistrationstatus().getStatuscode());		
-		cal.setTime(new Date());				  
-		logElement.setTimeStamp(String.valueOf(cal.get(Calendar.YEAR)));					
-		logElement.setEvent(EventType.SUBMITTED);		
-		sampleXml.setLogElement(logElement);
-		
-		//VT: Set Material Type
-		Samples.Sample.MaterialTypes materialType = new Samples.Sample.MaterialTypes();
-		JAXBElement<MaterialTypes> materialTypeJAXBElement = this.objectFactory.createSamplesSampleMaterialTypes(materialType);		
-		for(CvSamplematerial sampleMaterial : sampleEntity.getCvSamplematerials()){
-			if(NilReasonType.match(sampleMaterial.getMaterialidentifier())){
-				materialType.setNilReason(sampleMaterial.getMaterialidentifier());
-				materialTypeJAXBElement.setNil(true);
-			}else{
-				materialType.getMaterialType().add(sampleMaterial.getMaterialidentifier());
-			}			
-		}				
-		sampleXml.setMaterialTypes(materialTypeJAXBElement);
-		
-		//VT: Set other name - DB store othername in 1:1 with sample
-		if(sampleEntity.getOthername()!=null){
-			Samples.Sample.OtherNames otherName = new Samples.Sample.OtherNames();
-			otherName.getOtherName().add(sampleEntity.getOthername());
-			sampleXml.setOtherNames(otherName);
-		}
-		
-		sampleXml.setPurpose(sampleEntity.getPurpose());
-		
-		//VT: Set resource
-		Samples.Sample.RelatedResources resources = new Samples.Sample.RelatedResources();		
-		for(Sampleresources resourceEntity : sampleEntity.getSampleresourceses()){
-			Samples.Sample.RelatedResources.RelatedResourceIdentifier resourceId= new Samples.Sample.RelatedResources.RelatedResourceIdentifier();			
-			resourceId.setRelatedIdentifierType(RelatedIdentifierType.fromValue(resourceEntity.getCvRelatedIdentifiertype().getRelatedidentifiertype()));					
-			resourceId.setRelationType(RelationType.fromValue(resourceEntity.getCvResourceRelationshiptype().getRelationshipType()));
-			resourceId.setValue(resourceEntity.getResourceidentifier());
-			resources.getRelatedResourceIdentifier().add(resourceId);			
-		}
-		if(!resources.getRelatedResourceIdentifier().isEmpty()){
-			sampleXml.setRelatedResources(resources);
-		}
-		
-		
-		//VT: Set Sample Collector
-		Samples.Sample.SampleCollectors sampleCollectors = new Samples.Sample.SampleCollectors();
-		JAXBElement<SampleCollectors> sampleCollectorJAXBElement = this.objectFactory.createSamplesSampleSampleCollectors(sampleCollectors);
-		for(SampleCollector sampleCollector: sampleEntity.getSampleCollectors()){
-			if(NilReasonType.match(sampleCollector.getCollector())){
-				sampleCollectors.setNilReason(sampleCollector.getCollector());
-				sampleCollectorJAXBElement.setNil(true);
-			}else{
-				Collector collector = new Collector();
-				collector.setCollectorIdentifier(sampleCollector.getCollectoridentifier());
-				collector.setValue(sampleCollector.getCollector());
-				sampleCollectors.getCollector().add(collector);
-			}
-			
-		}		
-		sampleXml.setSampleCollectors(sampleCollectorJAXBElement);
-		
-		//VT: Sample Curation
-		Samples.Sample.SampleCuration sampleCurationXml = new Samples.Sample.SampleCuration();
-		for(Samplecuration sc : sampleEntity.getSamplecurations()){
-			Curation c= new Curation();
-			
-			c.setCurator(sc.getCurator());
-			c.setCurationLocation(sc.getCurationlocation());
-			
-			//VT Set time - Linked to database curation start time
-			Curation.CurationTime curationTime= new Curation.CurationTime();
-			if(sc.getCurationstart()!=null){
-				cal.setTime(sc.getCurationstart());
-				curationTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));			
-				c.setCurationTime(curationTime);
-			}
-			
-		
-			//VT Set curator
-			sampleCurationXml.getCuration().add(c);
-		}				
-		sampleXml.setSampleCuration(sampleCurationXml);		
-		
-		
-		sampleXml.setSampleName(sampleEntity.getSamplename());
-		sampleXml.setSampleNumber(sampleNumberXml);
-						
-		
-		//VT: Sample Type
-		Samples.Sample.SampleTypes sampleTypesXml = new Samples.Sample.SampleTypes();
-		JAXBElement<SampleTypes> sampleTypeJAXBElement = this.objectFactory.createSamplesSampleSampleTypes(sampleTypesXml);
-		for(CvSampletype cst : sampleEntity.getCvSampletypes()){
-			if(NilReasonType.match(cst.getSampletypeidentifier())){
-				sampleTypesXml.setNilReason(cst.getSampletypeidentifier());				
-				sampleTypesXml.getSampleType().add(null);
-				sampleTypeJAXBElement.setNil(true);
-				break;
-			}else{
-				sampleTypesXml.getSampleType().add(cst.getSampletypeidentifier());
-			}
-		}										
-		sampleXml.setSampleTypes(sampleTypeJAXBElement);		
-		
-		
-		sampleXml.setSamplingCampaign(sampleEntity.getSamplingcampaign());
-		
-		
-		//VT:Sampling Feature
-		Samples.Sample.SamplingFeatures samplingFeatures = new Samples.Sample.SamplingFeatures();
-		for(Samplingfeatures sampleFeature:sampleEntity.getSamplingfeatures()){
-			
-			Samples.Sample.SamplingFeatures.SamplingFeature feature = new Samples.Sample.SamplingFeatures.SamplingFeature();
-			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation featureLocation = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation();
-			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation();
-			//VT: elevation
-			elevation.setDatum(sampleFeature.getVerticaldatum());
-			elevation.setUnits(sampleFeature.getElevationUnits());
-			elevation.setValue(sampleFeature.getElevation());
-			featureLocation.setElevation(elevation);
-			
-			//VT: wkt
-			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
-			wkt.setSrs(sampleFeature.getFeaturesrs());
-			wkt.setSpatialType(SpatialType.POINT);
-			wkt.setValue(sampleFeature.getFeaturegeom().getCoordinate().y + " " + sampleFeature.getFeaturegeom().getCoordinate().x);			
-			featureLocation.setWkt(wkt);
-			
-			featureLocation.setLocality(sampleFeature.getFeaturelocality());
-			
-			feature.setSamplingFeatureLocation(featureLocation);
-			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureName samplingFeatureName = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureName();
-			samplingFeatureName.setValue(sampleFeature.getFeaturename());
-			samplingFeatureName.setSamplingFeatureType(sampleFeature.getCvSamplingfeature().getIdentifier());
-			feature.setSamplingFeatureName(samplingFeatureName);
-			
-			Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures sampledFeaturesXML = new Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures();
-			for(Sampledfeatures sampledFeature:sampleFeature.getSampledfeatures()){
-				
-				Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures.SampledFeature SampledFeatureXML= new Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures.SampledFeature();
-				SampledFeatureXML.setValue(sampledFeature.getFeaturename());
-				SampledFeatureXML.setSampledFeatureType(sampledFeature.getFeaturetype());
-				sampledFeaturesXML.getSampledFeature().add(SampledFeatureXML);
-			}
-			if(sampledFeaturesXML.getSampledFeature()!=null && !sampledFeaturesXML.getSampledFeature().isEmpty()){
-				feature.setSampledFeatures(sampledFeaturesXML);
-			}						
-			samplingFeatures.getSamplingFeature().add(feature);
-			
-		}		
-		if(!samplingFeatures.getSamplingFeature().isEmpty()){
-			sampleXml.setSamplingFeatures(samplingFeatures);
-		}
-		
-		//VT:Sampling location
-		Samples.Sample.SamplingLocation samplingLocation = new Samples.Sample.SamplingLocation();	
-		JAXBElement<SamplingLocation> samplingLocationJAXBElement = this.objectFactory.createSamplesSampleSamplingLocation(samplingLocation);
-		
-		if(sampleEntity.getSamplinglocNilreason()==null){
-			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation elevation = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Elevation();
-			//VT: sample elevation
-			elevation.setDatum(sampleEntity.getVerticaldatum());
-			elevation.setUnits(sampleEntity.getElevationUnits());
-			elevation.setValue(sampleEntity.getElevation());
-			if(elevation.getDatum()!=null || elevation.getUnits() != null || elevation.getValue()!=null){
-				samplingLocation.setElevation(elevation);
-			}		
-			samplingLocation.setLocality(sampleEntity.getLocality());
-			
-			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
-			wkt.setSrs(sampleEntity.getSamplinglocsrs());
-			wkt.setSpatialType(SpatialType.POINT);
-			wkt.setValue(sampleEntity.getSamplinglocgeom().getCoordinate().y + " " + sampleEntity.getSamplinglocgeom().getCoordinate().x);
-			samplingLocation.setWkt(wkt);
-		}else{
-			samplingLocation.setNilReason(sampleEntity.getSamplinglocNilreason());
-			samplingLocationJAXBElement.setNil(true);
-		}						
-		sampleXml.setSamplingLocation(samplingLocationJAXBElement);
-		
-
-		//VT:SamplingMethod		
-		Samples.Sample.SamplingMethod samplingMethod= new Samples.Sample.SamplingMethod();
-		JAXBElement<SamplingMethod> samplingMethodJAXBElement = this.objectFactory.createSamplesSampleSamplingMethod(samplingMethod);
-		if(NilReasonType.match(sampleEntity.getCvSamplingmethod().getMethodidentifier())){
-			samplingMethod.setNilReason(sampleEntity.getCvSamplingmethod().getMethodidentifier());
-			samplingMethodJAXBElement.setNil(true);
-		}else{
-			samplingMethod.setValue(sampleEntity.getCvSamplingmethod().getMethodidentifier());
-		}		
-		sampleXml.setSamplingMethod(samplingMethodJAXBElement);//VT: TODO- check null
-		
-		//VT:SamplingTime
-		if(sampleEntity.getSamplingtimeNilreason()!=null){
-			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();	
-			samplingTime.setNilReason(sampleEntity.getSamplingtimeNilreason());
-			JAXBElement<SamplingTime> samplingTimeJAXBElement = this.objectFactory.createSamplesSampleSamplingTime(samplingTime);
-			samplingTimeJAXBElement.setNil(true);
-			sampleXml.setSamplingTime(samplingTimeJAXBElement);			
-		}else{	
-			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
-			cal.setTime(sampleEntity.getSamplingstart());			    
-			samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
-			sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
-		}
-		
-		return sampleXml;
-		
+	public Samples.Sample SampleToXml(Sample sampleEntity) throws Exception{		
+		return this.jaxbConverter.convert(sampleEntity);		
 	}
 	
+	public List<Sample> searchSampleByDate(Date fromDate, Date until, Integer pageNumber){
+		
+		final Integer pageSize = 1;
+		
+		EntityManager em = JPAEntityManager.createEntityManager();
+		
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();				
+		CriteriaQuery<Sample> criteriaQuery = criteriaBuilder.createQuery(Sample.class);
+		Root<Sample> from = criteriaQuery.from(Sample.class);
+		
+		
+					
+		List<Predicate> predicates =this.oaiPredicateBuilder(fromDate,until, criteriaBuilder,from);
+			
+		CriteriaQuery<Sample> select = criteriaQuery.select(from).where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
+		
+		select = select.orderBy(criteriaBuilder.asc(from.get("sampleid")));
+	
+		TypedQuery<Sample> typedQuery = em.createQuery(select);
+		
+		if(pageNumber != null && pageSize != null){
+			typedQuery.setFirstResult((pageNumber - 1)*pageSize);
+		    typedQuery.setMaxResults(pageSize);
+		}
+
+	    List<Sample> result = typedQuery.getResultList();
+		
+		em.close();
+		return result;
+	}
+	
+	
+	private List<Predicate> oaiPredicateBuilder(Date from, Date until,CriteriaBuilder criteriaBuilder,Root<Sample> fromTable){
+		
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		
+		//VT: we are only keen in public date for oai harvesting
+		predicates.add(criteriaBuilder.isTrue(fromTable.get("ispublic")));
+		
+		if (from != null) {
+			predicates.add(criteriaBuilder.greaterThanOrEqualTo(fromTable.get("modified"),from));
+		}
+		
+		if (until != null) {
+			predicates.add(criteriaBuilder.lessThan(fromTable.get("modified"),until));
+		}
+		
+		
+		return predicates;
+	}
 	
 	
 	public Sample searchSampleByIGSN(String igsn){

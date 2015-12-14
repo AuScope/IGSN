@@ -1,20 +1,18 @@
 package org.csiro.oai;
 
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import org.csiro.binding.IGSNJAXBInterface;
 import org.csiro.igsn.entity.postgres2_0.Sample;
-import org.csiro.igsn.entity.postgres2_0.SampleCollector;
-import org.csiro.igsn.entity.postgres2_0.Samplecuration;
-import org.csiro.igsn.entity.postgres2_0.Sampleresources;
 import org.csiro.oai.binding.GetRecordType;
 import org.csiro.oai.binding.HeaderType;
 import org.csiro.oai.binding.MetadataType;
@@ -26,12 +24,11 @@ import org.csiro.oai.binding.RecordType;
 import org.csiro.oai.binding.RequestType;
 import org.csiro.oai.binding.StatusType;
 import org.csiro.oai.binding.VerbType;
-import org.csiro.oai.dc.binding.ElementType;
-import org.csiro.oai.dc.binding.OaiDcType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
-@Service
+
+
 public class OAIService {
 	
 	ObjectFactory oaiObjectFactory;
@@ -39,6 +36,8 @@ public class OAIService {
 	
 	SimpleDateFormat dateFormatterLong = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssXXX");
 	SimpleDateFormat dateFormatterShort = new SimpleDateFormat("YYYY-MM-dd");
+	
+	List<IGSNJAXBInterface> igsnJAXBInterface;
 	
 	@Value("#{configProperties['OAI_BASEURL_VALUE']}")
 	private String OAI_BASEURL_VALUE;
@@ -50,8 +49,10 @@ public class OAIService {
 	private String OAI_CSIRO_IDENTIFIER_PREFIX;
 	
 	
-	public OAIService(){
+	@Autowired
+	public OAIService(List<IGSNJAXBInterface> igsnJAXBInterface){
 		oaiObjectFactory = new ObjectFactory();
+		this.igsnJAXBInterface = igsnJAXBInterface;
 	}
 
 	
@@ -81,9 +82,90 @@ public class OAIService {
 		return oaipmh;
 	}
 	
+	public JAXBElement<OAIPMHtype> getBadArgument() throws DatatypeConfigurationException{
+		
+		
+		
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(VerbType.GET_RECORD);		
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		//VT: Set error
+		OAIPMHerrorType errorType = new OAIPMHerrorType();
+		errorType.setCode(OAIPMHerrorcodeType.BAD_ARGUMENT);
+		errorType.setValue("Missing require arguement");
+		oaiType.getError().add(errorType);
+		
+
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+	}
+	
+	public JAXBElement<OAIPMHtype> getCannotDisseminateFormat() throws DatatypeConfigurationException{
+		
+		
+		
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(VerbType.GET_RECORD);		
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		//VT: Set error
+		OAIPMHerrorType errorType = new OAIPMHerrorType();
+		errorType.setCode(OAIPMHerrorcodeType.CANNOT_DISSEMINATE_FORMAT);
+		errorType.setValue("metadataPrefix unrecognized");
+		oaiType.getError().add(errorType);
+		
+
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+	}
+	
+	public JAXBElement<OAIPMHtype> getIdDoesNotExist() throws DatatypeConfigurationException{
+		
+		
+		
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(VerbType.GET_RECORD);		
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		//VT: Set error
+		OAIPMHerrorType errorType = new OAIPMHerrorType();
+		errorType.setCode(OAIPMHerrorcodeType.ID_DOES_NOT_EXIST);
+		errorType.setValue("Unable to find ID");
+		oaiType.getError().add(errorType);
+		
+
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+	}
+	
 	public JAXBElement<OAIPMHtype> getRecordOAI(Sample sample, String metadataPrefix) throws DatatypeConfigurationException, JAXBException{
 		
-	
+		if(sample==null){
+			return this.getIdDoesNotExist();
+		}
+		
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
@@ -111,7 +193,11 @@ public class OAIService {
 		recordType.setHeader(headerType);	
 		
 		//VT: Set Metadata
-		recordType.setMetadata(getDCMetaData(sample));
+		IGSNJAXBInterface converter = this.getSuitableConverter(metadataPrefix);
+		if(converter==null){
+			return this.getCannotDisseminateFormat();
+		}
+		recordType.setMetadata(getMetaData(converter,sample));
 		
 		getRecordType.setRecord(recordType);						
 		oaiType.setGetRecord(getRecordType);		
@@ -119,72 +205,74 @@ public class OAIService {
 		return oaipmh;
 	}
 	
-	public MetadataType getDCMetaData(Sample sample) throws JAXBException{
+	
+	
+	
+	public JAXBElement<OAIPMHtype> getListRecords(List<Sample> sample, String metadataPrefix) throws DatatypeConfigurationException, JAXBException{
 		
-		org.csiro.oai.dc.binding.ObjectFactory dcObjectfactory = new org.csiro.oai.dc.binding.ObjectFactory();
-		OaiDcType oaiDcType = new OaiDcType();
-		//Title
-		ElementType title = new ElementType();
-		title.setValue(sample.getSamplename());
-		oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createTitle(title));
-		
-		for(SampleCollector sampleCollector:sample.getSampleCollectors()){
-			ElementType creator = new ElementType();
-			creator.setValue(sampleCollector.getCollector());
-			oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createCreator(creator));
+		if(sample==null){
+			return this.getIdDoesNotExist();
 		}
 		
-		for(Samplecuration sampleCuration:sample.getSamplecurations()){
-			ElementType publisher = new ElementType();
-			publisher.setValue(sampleCuration.getCurator());
-			oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createPublisher(publisher));
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(VerbType.GET_RECORD);	
+		requestType.setIdentifier(OAI_CSIRO_IDENTIFIER_PREFIX + sample.getIgsn());
+		requestType.setMetadataPrefix(metadataPrefix);
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		//VT:GetRecord
+		GetRecordType getRecordType = new GetRecordType();
+		RecordType recordType = new RecordType();
+		HeaderType headerType = new HeaderType();		
+		
+		//GetRecord header
+		headerType.setIdentifier(OAI_CSIRO_IDENTIFIER_PREFIX + sample.getIgsn());
+		headerType.setDatestamp(dateFormatterShort.format(sample.getModified()));
+		if(sample.getStatusByRegistrationstatus().getStatuscode().equals("Deprecated")){
+			headerType.setStatus(StatusType.DELETED);
+		}				
+		recordType.setHeader(headerType);	
+		
+		//VT: Set Metadata
+		IGSNJAXBInterface converter = this.getSuitableConverter(metadataPrefix);
+		if(converter==null){
+			return this.getCannotDisseminateFormat();
 		}
+		recordType.setMetadata(getMetaData(converter,sample));
 		
-		ElementType subject = new ElementType();
-		subject.setValue(sample.getClassification());
-		oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createSubject(subject));
-		
-		ElementType description = new ElementType();
-		description.setValue(sample.getComment());
-		oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createDescription(description));
-		
-		for(Sampleresources resource:sample.getSampleresourceses()){
-			ElementType relation = new ElementType();
-			relation.setValue("RelatedResource: " + resource.getResourceidentifier() + ", relationship: " + resource.getCvResourceRelationshiptype().getRelationshipType());
-			oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createDescription(relation));				
-		}
-		
-		
-		if(sample.getSamplingstart()!=null){
-			ElementType date = new ElementType();
-			date.setValue(dateFormatterLong.format(sample.getSamplingstart()));
-			oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createDate(date));
-		}
-		
-		if(sample.getSamplinglocgeom()!=null){
-			ElementType coverage = new ElementType();
-			coverage.setValue("Coordinates(lat/Lon):" + sample.getSamplinglocgeom().getCoordinate().toString());
-			oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createCoverage(coverage));
-		}
-		
-		ElementType type = new ElementType();
-		type.setValue("http://purl.org/dc/dcmitype/PhysicalObject");
-		oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createType(type));
-		
-		ElementType identifier = new ElementType();
-		identifier.setValue(sample.getIgsn());
-		oaiDcType.getTitleOrCreatorOrSubject().add(dcObjectfactory.createIdentifier(identifier));
-		
-		JAXBElement<OaiDcType> oaiDc = dcObjectfactory.createDc(oaiDcType);		
-		MetadataType metaDataType = new MetadataType();
-		metaDataType.setAny(oaiDc);
+		getRecordType.setRecord(recordType);						
+		oaiType.setGetRecord(getRecordType);		
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+	}
+	
+	
+	
+	public MetadataType getMetaData(IGSNJAXBInterface converter,Sample sample) throws JAXBException{
 
+		MetadataType metaDataType = new MetadataType();
+		metaDataType.setAny(converter.convert(sample));
 				
 		return metaDataType;
 	}
 	
-	public void getCGIGSNMetaData(){
-		
+	
+	
+	private  IGSNJAXBInterface getSuitableConverter(String metadataPrefix){
+		for(IGSNJAXBInterface converter:this.igsnJAXBInterface){
+			if(converter.supports(metadataPrefix)){
+				return converter;
+			}
+		}
+				
+		return null;
 	}
 
 	
