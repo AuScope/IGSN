@@ -68,6 +68,8 @@ public class SampleEntityService {
 	ControlledValueEntityService controlledValueEntityService;
 	JAXBConverter jaxbConverter;
 	
+	public static final int PAGING_SIZE=1;
+	
 	@Autowired
 	public SampleEntityService(ControlledValueEntityService controlledValueEntityService){
 		this.controlledValueEntityService = controlledValueEntityService;
@@ -95,9 +97,31 @@ public class SampleEntityService {
 		return this.jaxbConverter.convert(sampleEntity);		
 	}
 	
+	
+	public Long getSampleSizeByDate(Date fromDate, Date until) {
+				
+		EntityManager em = JPAEntityManager.createEntityManager();
+		
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();				
+		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+		Root<Sample> from = countQuery.from(Sample.class);				
+					
+		List<Predicate> predicates =this.oaiPredicateBuilder(fromDate,until, criteriaBuilder,from);
+			
+		CriteriaQuery<Long> select = countQuery.select(criteriaBuilder.count(from)).where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
+		
+		TypedQuery<Long> typedQuery = em.createQuery(select);
+		
+		
+	   Long result = typedQuery.getSingleResult();
+		
+		em.close();
+		return result;
+	}
+	
 	public List<Sample> searchSampleByDate(Date fromDate, Date until, Integer pageNumber){
 		
-		final Integer pageSize = 1;
+		final Integer pageSize = getPagingSize();
 		
 		EntityManager em = JPAEntityManager.createEntityManager();
 		
@@ -116,7 +140,7 @@ public class SampleEntityService {
 		TypedQuery<Sample> typedQuery = em.createQuery(select);
 		
 		if(pageNumber != null && pageSize != null){
-			typedQuery.setFirstResult((pageNumber - 1)*pageSize);
+			typedQuery.setFirstResult((pageNumber)*pageSize);
 		    typedQuery.setMaxResults(pageSize);
 		}
 
@@ -139,7 +163,7 @@ public class SampleEntityService {
 		}
 		
 		if (until != null) {
-			predicates.add(criteriaBuilder.lessThan(fromTable.get("modified"),until));
+			predicates.add(criteriaBuilder.lessThanOrEqualTo(fromTable.get("modified"),until));
 		}
 		
 		
@@ -511,6 +535,13 @@ public class SampleEntityService {
 			throw e;
 		}
 	}
+
+	public int getPagingSize() {
+		// TODO Auto-generated method stub
+		return this.PAGING_SIZE;
+	}
+
+	
 	
 	
 	

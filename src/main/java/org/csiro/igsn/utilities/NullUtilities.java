@@ -14,7 +14,7 @@ public class NullUtilities {
 	
 	//VT: parse string date YYYY-MM-DD
 	public static Date parseDateYYYYMMDDAllowNull(String date) throws ParseException{		
-		DateFormat df = new SimpleDateFormat("YYYY-MM-dd");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		return (date==null || date.isEmpty())?null:df.parse(date);			
 	}
 

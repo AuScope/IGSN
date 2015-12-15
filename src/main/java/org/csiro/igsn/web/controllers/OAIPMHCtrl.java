@@ -20,6 +20,8 @@ import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.service.SampleEntityService;
 import org.csiro.igsn.utilities.NullUtilities;
 import org.csiro.oai.OAIService;
+import org.csiro.oai.TokenResumption;
+import org.csiro.oai.TokenResumptionService;
 import org.csiro.oai.binding.OAIPMHtype;
 import org.csiro.oai.binding.VerbType;
 import org.csiro.oai.dc.binding.OaiDcType;
@@ -38,6 +40,7 @@ public class OAIPMHCtrl {
 	static final Logger log = Logger.getLogger(OAIPMHCtrl.class);
 	OAIService oaiService;
 	SampleEntityService sampleEntityService;
+	TokenResumptionService tokenResumptionService;
 	
 	@Value("#{configProperties['OAI_CSIRO_IDENTIFIER_PREFIX']}")
 	private String OAI_CSIRO_IDENTIFIER_PREFIX;
@@ -46,6 +49,7 @@ public class OAIPMHCtrl {
 	public OAIPMHCtrl(OAIService oaiService,SampleEntityService sampleEntityService){
 		this.oaiService = oaiService;
 		this.sampleEntityService = sampleEntityService;
+		this.tokenResumptionService = new TokenResumptionService();
 	}
 
 	
@@ -55,9 +59,9 @@ public class OAIPMHCtrl {
 			@RequestParam(required = true, value ="verb") String verb,
 			@RequestParam(required = false, value ="identifier") String identifier,
 			@RequestParam(required = false, value ="metadataPrefix") String metadataPrefix,
-			@RequestParam(required = false, value ="from ") String from,
-			@RequestParam(required = false, value ="until ") String until,
-			@RequestParam(required = false, value ="resumptionToken  ") String resumptionToken) throws DatatypeConfigurationException, JAXBException, IOException, ParseException {
+			@RequestParam(required = false, value ="from") String from,
+			@RequestParam(required = false, value ="until") String until,
+			@RequestParam(required = false, value ="resumptionToken") String resumptionToken) throws DatatypeConfigurationException, JAXBException, IOException, ParseException {
 		
 		response.setContentType("text/xml");
 		
@@ -69,14 +73,25 @@ public class OAIPMHCtrl {
 			Sample sample = sampleEntityService.searchSampleByIGSN(identifier.replace(OAI_CSIRO_IDENTIFIER_PREFIX, ""));			
 			marshalToWrtier(oaiService.getRecordOAI(sample, metadataPrefix),response.getWriter(),OAIPMHtype.class,OaiDcType.class, org.csiro.oai.igsn.binding.Samples.Sample.class);
 		}else if(verb.equals(VerbType.LIST_RECORDS.value())){
-			Integer page=0;
-			if(!resumptionToken.isEmpty()){
-				//VT:Get page
+			
+			//VT: First entry no token
+			if(resumptionToken==null || resumptionToken.isEmpty()){		
+				Long size = sampleEntityService.getSampleSizeByDate(NullUtilities.parseDateYYYYMMDDAllowNull(from), NullUtilities.parseDateYYYYMMDDAllowNull(until));
+				List<Sample> samples= sampleEntityService.searchSampleByDate(NullUtilities.parseDateYYYYMMDDAllowNull(from), NullUtilities.parseDateYYYYMMDDAllowNull(until), 0);				
+				marshalToWrtier(oaiService.getListRecords(samples, metadataPrefix,from,until,size,null),
+						response.getWriter(),OAIPMHtype.class,OaiDcType.class, org.csiro.oai.igsn.binding.Samples.Sample.class);				
+			}else{
+				TokenResumption token = this.tokenResumptionService.get(resumptionToken);
+				if(token==null){
+					marshalToWrtier(oaiService.getBadResumptionToken(VerbType.LIST_RECORDS),response.getWriter(),OAIPMHtype.class);
+					return;
+				}
+				token.setPage(token.getPage()+1); //VT: going to the next page
+				List<Sample> samples= sampleEntityService.searchSampleByDate(NullUtilities.parseDateYYYYMMDDAllowNull(token.getFrom()), NullUtilities.parseDateYYYYMMDDAllowNull(token.getUntil()), token.getPage());
+				marshalToWrtier(oaiService.getListRecords(samples, token.getMetadataprefix(),token.getFrom(),token.getUntil(),token.getCompleteListSize(),token),
+						response.getWriter(),OAIPMHtype.class,OaiDcType.class, org.csiro.oai.igsn.binding.Samples.Sample.class);
 			}
-						
-			List<Sample> samples= sampleEntityService.searchSampleByDate(NullUtilities.parseDateYYYYMMDDAllowNull(from), NullUtilities.parseDateYYYYMMDDAllowNull(until), page);
-			
-			
+												
 		}else{			
 			marshalToWrtier(oaiService.getBadVerb(),response.getWriter(),OAIPMHtype.class,OaiDcType.class);
 		}
