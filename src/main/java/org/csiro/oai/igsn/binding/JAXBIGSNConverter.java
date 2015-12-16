@@ -10,6 +10,12 @@ import javax.xml.bind.JAXBElement;
 
 
 
+
+
+
+
+
+
 import org.csiro.binding.IGSNJAXBInterface;
 import org.csiro.igsn.entity.postgres2_0.CvSamplematerial;
 import org.csiro.igsn.entity.postgres2_0.CvSampletype;
@@ -19,6 +25,7 @@ import org.csiro.igsn.entity.postgres2_0.Samplecuration;
 import org.csiro.igsn.entity.postgres2_0.Sampledfeatures;
 import org.csiro.igsn.entity.postgres2_0.Sampleresources;
 import org.csiro.igsn.entity.postgres2_0.Samplingfeatures;
+import org.csiro.oai.dc.binding.OaiDcType;
 import org.csiro.oai.igsn.binding.Samples.Sample.MaterialTypes;
 import org.csiro.oai.igsn.binding.Samples.Sample.SampleCollectors;
 import org.csiro.oai.igsn.binding.Samples.Sample.SampleCollectors.Collector;
@@ -27,6 +34,8 @@ import org.csiro.oai.igsn.binding.Samples.Sample.SampleTypes;
 import org.csiro.oai.igsn.binding.Samples.Sample.SamplingLocation;
 import org.csiro.oai.igsn.binding.Samples.Sample.SamplingMethod;
 import org.csiro.oai.igsn.binding.Samples.Sample.SamplingTime;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 
@@ -35,6 +44,9 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 	
 	ObjectFactory objectFactory;
 	final String METAPREFIX="cs_igsn";
+	final String NAMESPACE_FOR_BINDING="http://igsn.org/schema/kernel-v.1.0";
+	final String SCHEMA_LOCATION_FOR_BINDING="https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd";
+	final Class XML_ROOT_CLASS = org.csiro.oai.igsn.binding.Samples.Sample.class;
 	
 	public JAXBIGSNConverter(){
 		this.objectFactory = new ObjectFactory();
@@ -291,6 +303,30 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 		samplesXml.getSample().add(sampleXml);
 		
 		return samplesXml;
+	}
+	
+	@Override
+	public String getMetadataPrefix() {		
+		return METAPREFIX;
+	}
+
+
+
+	@Override
+	public String getNamespace() {
+		return NAMESPACE_FOR_BINDING;
+	}
+
+
+
+	@Override
+	public String getSchemaLocation() {	
+		return SCHEMA_LOCATION_FOR_BINDING;
+	}
+	
+	@Override
+	public Class getXMLRootClass() {		
+		return XML_ROOT_CLASS;
 	}
 
 }

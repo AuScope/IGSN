@@ -3,12 +3,15 @@ package org.csiro.oai.dc.binding;
 import java.text.SimpleDateFormat;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 
 import org.csiro.binding.IGSNJAXBInterface;
 import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.entity.postgres2_0.SampleCollector;
 import org.csiro.igsn.entity.postgres2_0.Samplecuration;
 import org.csiro.igsn.entity.postgres2_0.Sampleresources;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 
@@ -16,6 +19,11 @@ import org.springframework.stereotype.Service;
 public class JAXBDCConverter implements IGSNJAXBInterface{
 	
 	final String METAPREFIX="oai_dc";
+	final String NAMESPACE_FOR_BINDING="http://www.openarchives.org/OAI/2.0/oai_dc/";
+	final String SCHEMA_LOCATION_FOR_BINDING="http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
+	final Class XML_ROOT_CLASS = OaiDcType.class;
+	
+	
 	SimpleDateFormat dateFormatterLong = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssXXX");
 	
 	
@@ -87,5 +95,39 @@ public class JAXBDCConverter implements IGSNJAXBInterface{
 		
 		return dcObjectfactory.createDc(oaiDcType);	
 	}
+
+
+
+	@Override
+	public String getMetadataPrefix() {		
+		return METAPREFIX;
+	}
+
+
+
+	@Override
+	public String getNamespace() {
+		return NAMESPACE_FOR_BINDING;
+	}
+
+
+
+	@Override
+	public String getSchemaLocation() {
+		
+		return SCHEMA_LOCATION_FOR_BINDING;
+	}
+
+
+
+	@Override
+	public Class getXMLRootClass() {
+		
+		return XML_ROOT_CLASS;
+	}
+
+
+
+
 
 }

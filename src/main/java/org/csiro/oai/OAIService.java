@@ -17,7 +17,10 @@ import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.service.SampleEntityService;
 import org.csiro.oai.binding.GetRecordType;
 import org.csiro.oai.binding.HeaderType;
+import org.csiro.oai.binding.ListIdentifiersType;
+import org.csiro.oai.binding.ListMetadataFormatsType;
 import org.csiro.oai.binding.ListRecordsType;
+import org.csiro.oai.binding.MetadataFormatType;
 import org.csiro.oai.binding.MetadataType;
 import org.csiro.oai.binding.OAIPMHerrorType;
 import org.csiro.oai.binding.OAIPMHerrorcodeType;
@@ -30,13 +33,16 @@ import org.csiro.oai.binding.StatusType;
 import org.csiro.oai.binding.VerbType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 
-
+@Service
 public class OAIService {
 	
 	ObjectFactory oaiObjectFactory;
 	TokenResumptionService tokenResumptionService;
+	
+	public static final String REPOSITORY_ID="oai:csiro.au:igsn";
 	
 	SimpleDateFormat dateFormatterLong = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	SimpleDateFormat dateFormatterShort = new SimpleDateFormat("yyyy-MM-dd");
@@ -113,7 +119,9 @@ public class OAIService {
 		return oaipmh;
 	}
 	
-	public JAXBElement<OAIPMHtype> getBadArgument() throws DatatypeConfigurationException{
+	 
+	
+	public JAXBElement<OAIPMHtype> getNoSetHierarchy(VerbType operation) throws DatatypeConfigurationException{
 		
 		
 		
@@ -124,7 +132,33 @@ public class OAIService {
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
-		requestType.setVerb(VerbType.GET_RECORD);		
+		requestType.setVerb(operation);		
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		//VT: Set error
+		OAIPMHerrorType errorType = new OAIPMHerrorType();
+		errorType.setCode(OAIPMHerrorcodeType.NO_SET_HIERARCHY);
+		errorType.setValue("This repository does not support sets");
+		oaiType.getError().add(errorType);
+		
+
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+	}
+	
+	public JAXBElement<OAIPMHtype> getBadArgument(VerbType operation) throws DatatypeConfigurationException{
+		
+		
+		
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(operation);		
 		requestType.setValue(OAI_BASEURL_VALUE);
 		oaiType.setRequest(requestType);
 		
@@ -217,6 +251,40 @@ public class OAIService {
 		return oaipmh;
 	}
 	
+	public JAXBElement<OAIPMHtype> getListMetadataFormat(String identifier) throws DatatypeConfigurationException {
+		if(!identifier.toLowerCase().equals(REPOSITORY_ID)){
+			return this.getIdDoesNotExist();
+		}
+		
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(VerbType.LIST_METADATA_FORMATS);	
+		requestType.setIdentifier(identifier);		
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		ListMetadataFormatsType listMetadataFormatsType = new ListMetadataFormatsType();
+		
+		for(IGSNJAXBInterface converter:this.igsnJAXBInterface){
+			MetadataFormatType metadataFormatType = new MetadataFormatType();
+			metadataFormatType.setMetadataPrefix(converter.getMetadataPrefix());
+			metadataFormatType.setSchema(converter.getSchemaLocation());
+			metadataFormatType.setMetadataNamespace(converter.getNamespace());
+			
+			listMetadataFormatsType.getMetadataFormat().add(metadataFormatType);
+		}
+		oaiType.setListMetadataFormats(listMetadataFormatsType);
+		
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+		
+	}
+	
 	public JAXBElement<OAIPMHtype> getRecordOAI(Sample sample, String metadataPrefix) throws DatatypeConfigurationException, JAXBException{
 		
 		if(sample==null){
@@ -263,6 +331,64 @@ public class OAIService {
 	}
 	
 	
+	
+	public JAXBElement<OAIPMHtype> getListIdentifier(List<Sample> samples, String metadataPrefix, String from, String until, Long totalCount, TokenResumption tokenResumption) throws DatatypeConfigurationException, JAXBException{
+		
+		if(samples.isEmpty()){
+			return this.getNoRecordMatch(VerbType.LIST_RECORDS);
+		}
+		
+		//VT: Find suitable converter
+		IGSNJAXBInterface converter = this.getSuitableConverter(metadataPrefix);
+		if(converter==null){
+			return this.getCannotDisseminateFormat();
+		}
+		
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(VerbType.LIST_IDENTIFIERS);
+		if(tokenResumption == null){
+			if(from != null && !from.isEmpty()){
+				requestType.setFrom(from);
+			}		
+			if(until !=null && !until.isEmpty()){
+				requestType.setUntil(until);
+			}
+			requestType.setMetadataPrefix(metadataPrefix);
+		}else{
+			requestType.setResumptionToken(tokenResumption.getKey());
+		}
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		//VT:GetRecord
+		ListIdentifiersType listIdentifiersType = new ListIdentifiersType();
+		
+		for(Sample sample : samples){			
+			HeaderType headerType = new HeaderType();		
+			
+			//GetRecord header
+			headerType.setIdentifier(OAI_CSIRO_IDENTIFIER_PREFIX + sample.getIgsn());
+			headerType.setDatestamp(dateFormatterShort.format(sample.getModified()));
+			if(sample.getStatusByRegistrationstatus()!=null && sample.getStatusByRegistrationstatus().getStatuscode().equals("Deprecated")){
+				headerType.setStatus(StatusType.DELETED);
+			}				
+															
+			listIdentifiersType.getHeader().add(headerType);
+		}
+		
+		
+		listIdentifiersType.setResumptionToken(manageResumptionToken( metadataPrefix,  from,  until,  totalCount,  tokenResumption));
+		oaiType.setListIdentifiers(listIdentifiersType);	
+		
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+	}
 	
 	
 	public JAXBElement<OAIPMHtype> getListRecords(List<Sample> samples, String metadataPrefix, String from, String until, Long totalCount, TokenResumption tokenResumption) throws DatatypeConfigurationException, JAXBException{
@@ -399,7 +525,7 @@ public class OAIService {
 	
 	
 	
-	private  IGSNJAXBInterface getSuitableConverter(String metadataPrefix){
+	public IGSNJAXBInterface getSuitableConverter(String metadataPrefix){
 		for(IGSNJAXBInterface converter:this.igsnJAXBInterface){
 			if(converter.supports(metadataPrefix)){
 				return converter;
@@ -408,6 +534,9 @@ public class OAIService {
 				
 		return null;
 	}
+
+
+	
 
 	
 }
