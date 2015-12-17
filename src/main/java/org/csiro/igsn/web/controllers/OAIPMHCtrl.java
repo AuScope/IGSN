@@ -132,6 +132,10 @@ public class OAIPMHCtrl {
 				return;
 			}
 			marshalToWrtier(oaiService.getListMetadataFormat(identifier),response.getWriter(),OAIPMHtype.class);
+		}else if(verb.equals(VerbType.IDENTIFY.value())){			
+			marshalToWrtier(oaiService.getIdentify(),response.getWriter(),OAIPMHtype.class);
+		}else if(verb.equals(VerbType.LIST_SETS.value())){			
+			marshalToWrtier(oaiService.getNoSetHierarchy(VerbType.LIST_SETS),response.getWriter(),OAIPMHtype.class);
 		}else{			
 			marshalToWrtier(oaiService.getBadVerb(),response.getWriter(),OAIPMHtype.class);
 		}

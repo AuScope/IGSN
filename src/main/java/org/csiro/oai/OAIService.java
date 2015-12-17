@@ -15,8 +15,12 @@ import javax.xml.datatype.DatatypeFactory;
 import org.csiro.binding.IGSNJAXBInterface;
 import org.csiro.igsn.entity.postgres2_0.Sample;
 import org.csiro.igsn.service.SampleEntityService;
+import org.csiro.oai.binding.DeletedRecordType;
+import org.csiro.oai.binding.DescriptionType;
 import org.csiro.oai.binding.GetRecordType;
+import org.csiro.oai.binding.GranularityType;
 import org.csiro.oai.binding.HeaderType;
+import org.csiro.oai.binding.IdentifyType;
 import org.csiro.oai.binding.ListIdentifiersType;
 import org.csiro.oai.binding.ListMetadataFormatsType;
 import org.csiro.oai.binding.ListRecordsType;
@@ -49,14 +53,20 @@ public class OAIService {
 	
 	List<IGSNJAXBInterface> igsnJAXBInterface;
 	
+	@Value("#{configProperties['OAI_CSIRO_IDENTIFIER_PREFIX']}")
+	private String OAI_CSIRO_IDENTIFIER_PREFIX;
+	
 	@Value("#{configProperties['OAI_BASEURL_VALUE']}")
 	private String OAI_BASEURL_VALUE;
 	
-	@Value("#{configProperties['OAI_BASEURL_VALUE']}")
-	private String OAI_CSIRO_METADATAPREFIX;
+	@Value("#{configProperties['OAI_REPO_NAME']}")
+	private String OAI_REPO_NAME;
 	
-	@Value("#{configProperties['OAI_CSIRO_IDENTIFIER_PREFIX']}")
-	private String OAI_CSIRO_IDENTIFIER_PREFIX;
+	@Value("#{configProperties['OAI_ADMIN_EMAIL']}")
+	private String OAI_ADMIN_EMAIL;
+	
+
+	
 	
 	
 	@Autowired
@@ -103,8 +113,7 @@ public class OAIService {
 		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
 		
 		//VT:Set Request Type
-		RequestType requestType = new RequestType();
-		requestType.setVerb(VerbType.GET_RECORD);		
+		RequestType requestType = new RequestType();		
 		requestType.setValue(OAI_BASEURL_VALUE);
 		oaiType.setRequest(requestType);
 		
@@ -199,7 +208,7 @@ public class OAIService {
 		return oaipmh;
 	}
 	
-	public JAXBElement<OAIPMHtype> getCannotDisseminateFormat() throws DatatypeConfigurationException{
+	public JAXBElement<OAIPMHtype> getCannotDisseminateFormat(VerbType operation) throws DatatypeConfigurationException{
 		
 		
 		
@@ -210,7 +219,7 @@ public class OAIService {
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
-		requestType.setVerb(VerbType.GET_RECORD);		
+		requestType.setVerb(operation);		
 		requestType.setValue(OAI_BASEURL_VALUE);
 		oaiType.setRequest(requestType);
 		
@@ -225,7 +234,7 @@ public class OAIService {
 		return oaipmh;
 	}
 	
-	public JAXBElement<OAIPMHtype> getIdDoesNotExist() throws DatatypeConfigurationException{
+	public JAXBElement<OAIPMHtype> getIdDoesNotExist(VerbType operation) throws DatatypeConfigurationException{
 		
 		
 		
@@ -236,7 +245,7 @@ public class OAIService {
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
-		requestType.setVerb(VerbType.GET_RECORD);		
+		requestType.setVerb(operation);		
 		requestType.setValue(OAI_BASEURL_VALUE);
 		oaiType.setRequest(requestType);
 		
@@ -251,9 +260,44 @@ public class OAIService {
 		return oaipmh;
 	}
 	
+	public JAXBElement<OAIPMHtype> getIdentify() throws DatatypeConfigurationException {
+		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
+		
+		//VT:Set response Date
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		
+		//VT:Set Request Type
+		RequestType requestType = new RequestType();
+		requestType.setVerb(VerbType.IDENTIFY);	
+		
+		requestType.setValue(OAI_BASEURL_VALUE);
+		oaiType.setRequest(requestType);
+		
+		IdentifyType identifyType = new IdentifyType();
+		identifyType.setRepositoryName(this.OAI_REPO_NAME);
+		identifyType.setBaseURL(this.OAI_BASEURL_VALUE);
+		identifyType.setProtocolVersion("2.0");		
+		identifyType.getAdminEmail().add(this.OAI_ADMIN_EMAIL);
+		identifyType.setEarliestDatestamp("2015-11-01T12:00:00Z");
+		identifyType.setGranularity(GranularityType.YYYY_MM_DD_THH_MM_SS_Z);
+		identifyType.setDeletedRecord(DeletedRecordType.PERSISTENT);
+		identifyType.getCompression().add("deflate");
+		
+		
+//		DescriptionType descriptionType  = new DescriptionType();
+//		
+//		identifyType.getDescription().add(descriptionType);
+		
+		oaiType.setIdentify(identifyType);
+		
+		JAXBElement<OAIPMHtype> oaipmh = oaiObjectFactory.createOAIPMH(oaiType);
+		return oaipmh;
+		
+	}
+	
 	public JAXBElement<OAIPMHtype> getListMetadataFormat(String identifier) throws DatatypeConfigurationException {
 		if(!identifier.toLowerCase().equals(REPOSITORY_ID)){
-			return this.getIdDoesNotExist();
+			return this.getIdDoesNotExist(VerbType.LIST_METADATA_FORMATS);
 		}
 		
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
@@ -288,7 +332,7 @@ public class OAIService {
 	public JAXBElement<OAIPMHtype> getRecordOAI(Sample sample, String metadataPrefix) throws DatatypeConfigurationException, JAXBException{
 		
 		if(sample==null){
-			return this.getIdDoesNotExist();
+			return this.getIdDoesNotExist(VerbType.GET_RECORD);
 		}
 		
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
@@ -320,7 +364,7 @@ public class OAIService {
 		//VT: Set Metadata
 		IGSNJAXBInterface converter = this.getSuitableConverter(metadataPrefix);
 		if(converter==null){
-			return this.getCannotDisseminateFormat();
+			return this.getCannotDisseminateFormat(VerbType.GET_RECORD);
 		}
 		recordType.setMetadata(getMetaData(converter,sample));
 		
@@ -341,7 +385,7 @@ public class OAIService {
 		//VT: Find suitable converter
 		IGSNJAXBInterface converter = this.getSuitableConverter(metadataPrefix);
 		if(converter==null){
-			return this.getCannotDisseminateFormat();
+			return this.getCannotDisseminateFormat(VerbType.LIST_IDENTIFIERS);
 		}
 		
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
@@ -400,7 +444,7 @@ public class OAIService {
 		//VT: Find suitable converter
 		IGSNJAXBInterface converter = this.getSuitableConverter(metadataPrefix);
 		if(converter==null){
-			return this.getCannotDisseminateFormat();
+			return this.getCannotDisseminateFormat(VerbType.LIST_RECORDS);
 		}
 		
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
@@ -495,8 +539,6 @@ public class OAIService {
 				return rtt;
 			}else{
 				
-				
-			
 				tokenResumptionService.update(tokenResumption.getKey(),tokenResumption);
 				
 				ResumptionTokenType rtt = new ResumptionTokenType();
@@ -507,10 +549,6 @@ public class OAIService {
 				return rtt;
 			}
 		}
-		
-		
-		
-		
 		
 	}
 
@@ -534,6 +572,9 @@ public class OAIService {
 				
 		return null;
 	}
+
+
+	
 
 
 	
