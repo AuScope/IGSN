@@ -60,6 +60,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 @Service
@@ -263,7 +264,7 @@ public class SampleEntityService {
 			sampleEntity.setSamplinglocNilreason(sampleXml.getSamplingLocation().getValue().getNilReason());
 		}else{
 			String[] samplingLocationStrPoint = sampleXml.getSamplingLocation().getValue().getWkt().getValue().split(" ");
-			Point samplinglocgeom = (Point)(SpatialUtilities.wktToGeometry(samplingLocationStrPoint[0], samplingLocationStrPoint[1]));		
+			Geometry samplinglocgeom = (SpatialUtilities.wktToGeometry(samplingLocationStrPoint[0], samplingLocationStrPoint[1],sampleXml.getSamplingLocation().getValue().getWkt().getSpatialType()));		
 			sampleEntity.setSamplinglocgeom(samplinglocgeom);
 			sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getValue().getWkt().getSrs());
 			
@@ -349,10 +350,10 @@ public class SampleEntityService {
 			for(SamplingFeature feature:sampleXml.getSamplingFeatures().getSamplingFeature()){
 				if(feature !=null){
 					CvSamplingfeature cvSamplingfeature = controlledValueEntityService.searchSamplingfeatureByIdentifier(feature.getSamplingFeatureName().getSamplingFeatureType());
-					Point featureLoc = null;
+					Geometry featureLoc = null;
 					try{
 						String[] featureLocStrPoint = feature.getSamplingFeatureLocation().getWkt().getValue().split(" ");										
-						 featureLoc = (Point)(SpatialUtilities.wktToGeometry(featureLocStrPoint[0], featureLocStrPoint[1]));
+						 featureLoc = (SpatialUtilities.wktToGeometry(featureLocStrPoint[0], featureLocStrPoint[1],feature.getSamplingFeatureLocation().getWkt().getSpatialType()));
 					}catch(Exception e){
 						
 					}
