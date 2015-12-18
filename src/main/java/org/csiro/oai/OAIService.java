@@ -46,8 +46,6 @@ public class OAIService {
 	ObjectFactory oaiObjectFactory;
 	TokenResumptionService tokenResumptionService;
 	
-	public static final String REPOSITORY_ID="oai:csiro.au:igsn";
-	
 	SimpleDateFormat dateFormatterLong = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	SimpleDateFormat dateFormatterShort = new SimpleDateFormat("yyyy-MM-dd");
 	
