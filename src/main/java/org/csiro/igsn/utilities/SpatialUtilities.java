@@ -10,6 +10,8 @@ public class SpatialUtilities {
 	
 	public static Geometry wktToGeometry(String lat, String lon) {
 
+		//VT: spatial store in lon/lat however mapping framework are often in lat/lon
+		//http://postgis.net/2013/08/18/tip_lon_lat/
 		String wkt = String.format("Point(%s %s)", lon,lat);
 				
         WKTReader fromText = new WKTReader(new GeometryFactory(new PrecisionModel(),4326));

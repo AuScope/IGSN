@@ -128,10 +128,11 @@ public class OAIPMHCtrl {
 												
 		}else if(verb.equals(VerbType.LIST_METADATA_FORMATS.value())){
 			if(identifier==null){
-				marshalToWrtier(oaiService.getBadArgument(VerbType.LIST_METADATA_FORMATS),response.getWriter(),OAIPMHtype.class);
+				marshalToWrtier(oaiService.getListMetadataFormat(null,identifier),response.getWriter(),OAIPMHtype.class);
 				return;
 			}
-			marshalToWrtier(oaiService.getListMetadataFormat(identifier),response.getWriter(),OAIPMHtype.class);
+			Sample sample = sampleEntityService.searchSampleByIGSN(identifier.replace(OAI_CSIRO_IDENTIFIER_PREFIX, ""));
+			marshalToWrtier(oaiService.getListMetadataFormat(sample,identifier),response.getWriter(),OAIPMHtype.class);
 		}else if(verb.equals(VerbType.IDENTIFY.value())){			
 			marshalToWrtier(oaiService.getIdentify(),response.getWriter(),OAIPMHtype.class);
 		}else if(verb.equals(VerbType.LIST_SETS.value())){			

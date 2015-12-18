@@ -295,9 +295,10 @@ public class OAIService {
 		
 	}
 	
-	public JAXBElement<OAIPMHtype> getListMetadataFormat(String identifier) throws DatatypeConfigurationException {
-		if(!identifier.toLowerCase().equals(REPOSITORY_ID)){
-			return this.getIdDoesNotExist(VerbType.LIST_METADATA_FORMATS);
+	public JAXBElement<OAIPMHtype> getListMetadataFormat(Sample sample,String identifier) throws DatatypeConfigurationException {
+		
+		if(identifier!=null && sample==null){
+			return this.getIdDoesNotExist(VerbType.GET_RECORD);
 		}
 		
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
