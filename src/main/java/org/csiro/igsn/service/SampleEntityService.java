@@ -1,10 +1,8 @@
 package org.csiro.igsn.service;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -15,31 +13,18 @@ import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.xml.bind.JAXBElement;
 
 import org.csiro.igsn.bindings.allocation2_0.EventType;
-import org.csiro.igsn.bindings.allocation2_0.IdentifierType;
 import org.csiro.igsn.bindings.allocation2_0.JAXBConverter;
-import org.csiro.igsn.bindings.allocation2_0.NilReasonType;
 import org.csiro.igsn.bindings.allocation2_0.ObjectFactory;
-import org.csiro.igsn.bindings.allocation2_0.RelatedIdentifierType;
-import org.csiro.igsn.bindings.allocation2_0.RelationType;
 import org.csiro.igsn.bindings.allocation2_0.Samples;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.MaterialTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.RelatedResources.RelatedResourceIdentifier;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors.Collector;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curation;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.SamplingFeature;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingFeatures.SamplingFeature.SampledFeatures.SampledFeature;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingLocation;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingMethod;
-import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingTime;
-import org.csiro.igsn.bindings.allocation2_0.SpatialType;
 import org.csiro.igsn.entity.postgres2_0.CvRelatedIdentifiertype;
 import org.csiro.igsn.entity.postgres2_0.CvResourceRelationshiptype;
 import org.csiro.igsn.entity.postgres2_0.CvSamplematerial;
@@ -61,7 +46,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 @Service
 public class SampleEntityService {
@@ -263,8 +247,8 @@ public class SampleEntityService {
 		if(sampleXml.getSamplingLocation().isNil()){
 			sampleEntity.setSamplinglocNilreason(sampleXml.getSamplingLocation().getValue().getNilReason());
 		}else{
-			String[] samplingLocationStrPoint = sampleXml.getSamplingLocation().getValue().getWkt().getValue().split(" ");
-			Geometry samplinglocgeom = (SpatialUtilities.wktToGeometry(samplingLocationStrPoint[0], samplingLocationStrPoint[1],sampleXml.getSamplingLocation().getValue().getWkt().getSpatialType()));		
+			String samplingLocationStrPoint = sampleXml.getSamplingLocation().getValue().getWkt().getValue();
+			Geometry samplinglocgeom = SpatialUtilities.wktToGeometry(samplingLocationStrPoint);		
 			sampleEntity.setSamplinglocgeom(samplinglocgeom);
 			sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getValue().getWkt().getSrs());
 			
@@ -352,8 +336,8 @@ public class SampleEntityService {
 					CvSamplingfeature cvSamplingfeature = controlledValueEntityService.searchSamplingfeatureByIdentifier(feature.getSamplingFeatureName().getSamplingFeatureType());
 					Geometry featureLoc = null;
 					try{
-						String[] featureLocStrPoint = feature.getSamplingFeatureLocation().getWkt().getValue().split(" ");										
-						 featureLoc = (SpatialUtilities.wktToGeometry(featureLocStrPoint[0], featureLocStrPoint[1],feature.getSamplingFeatureLocation().getWkt().getSpatialType()));
+						String featureLocStrPoint = feature.getSamplingFeatureLocation().getWkt().getValue();										
+						 featureLoc = SpatialUtilities.wktToGeometry(featureLocStrPoint);
 					}catch(Exception e){
 						
 					}

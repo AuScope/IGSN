@@ -5,18 +5,8 @@ import java.util.Date;
 
 import javax.xml.bind.JAXBElement;
 
-
-
-
-
-
-
-
-
-
-
-
 import org.csiro.binding.IGSNJAXBInterface;
+
 import org.csiro.igsn.entity.postgres2_0.CvSamplematerial;
 import org.csiro.igsn.entity.postgres2_0.CvSampletype;
 import org.csiro.igsn.entity.postgres2_0.Sample;
@@ -25,6 +15,7 @@ import org.csiro.igsn.entity.postgres2_0.Samplecuration;
 import org.csiro.igsn.entity.postgres2_0.Sampledfeatures;
 import org.csiro.igsn.entity.postgres2_0.Sampleresources;
 import org.csiro.igsn.entity.postgres2_0.Samplingfeatures;
+import org.csiro.igsn.utilities.SpatialUtilities;
 import org.csiro.oai.dc.binding.OaiDcType;
 import org.csiro.oai.igsn.binding.Samples.Sample.MaterialTypes;
 import org.csiro.oai.igsn.binding.Samples.Sample.SampleCollectors;
@@ -37,6 +28,10 @@ import org.csiro.oai.igsn.binding.Samples.Sample.SamplingTime;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 
 @Service
@@ -215,8 +210,8 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 			//VT: wkt
 			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
 			wkt.setSrs(sampleFeature.getFeaturesrs());
-			wkt.setSpatialType(SpatialType.POINT);
-			wkt.setValue(sampleFeature.getFeaturegeom().getCoordinate().y + " " + sampleFeature.getFeaturegeom().getCoordinate().x);			
+			wkt.setSpatialType(getSpatialTypeFromGeometry(sampleFeature.getFeaturegeom()));
+			wkt.setValue(sampleFeature.getFeaturegeom().toText());			
 			featureLocation.setWkt(wkt);
 			
 			featureLocation.setLocality(sampleFeature.getFeaturelocality());
@@ -262,8 +257,8 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 			
 			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
 			wkt.setSrs(sampleEntity.getSamplinglocsrs());
-			wkt.setSpatialType(SpatialType.POINT);
-			wkt.setValue(sampleEntity.getSamplinglocgeom().getCoordinate().y + " " + sampleEntity.getSamplinglocgeom().getCoordinate().x);
+			wkt.setSpatialType(getSpatialTypeFromGeometry(sampleEntity.getSamplinglocgeom()));
+			wkt.setValue(sampleEntity.getSamplinglocgeom().toText());
 			samplingLocation.setWkt(wkt);
 		}else{
 			samplingLocation.setNilReason(sampleEntity.getSamplinglocNilreason());
@@ -303,6 +298,16 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 		samplesXml.getSample().add(sampleXml);
 		
 		return samplesXml;
+	}
+	
+	public static SpatialType getSpatialTypeFromGeometry(Geometry geometry){
+		if(geometry instanceof Polygon){
+			return SpatialType.POLYGON; 
+		}else if(geometry instanceof Point){
+			return SpatialType.POINT;
+		}else{
+			return null;
+		}
 	}
 	
 	@Override
