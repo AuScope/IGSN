@@ -333,7 +333,7 @@ public class Samples {
 	String xmlns_xsi = "http://www.w3.org/2001/XMLSchema-instance";  
     
     @XmlAttribute(name="xsi:schemaLocation")
-	String xmlns_schemaLocation = "http://igsn.org/schema/kernel-v.1.0 https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd";
+	String xmlns_schemaLocation = "http://igsn.org/schema/kernel-v.1.0 https://igsn.csiro.au/schemas/2.0/igsn-csiro-v2.0.xsd";
 
     @XmlElement(required = true)
     protected List<Samples.Sample> sample;

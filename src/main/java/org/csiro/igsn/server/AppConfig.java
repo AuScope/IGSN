@@ -20,10 +20,10 @@ public class AppConfig {
 //    	  jaxb2Marshaller.setPackagesToScan("org.csiro.igsn.bindings.*");
 //    	  Map<String,Object> map = new HashMap<String,Object>();
 //    	  map.put("jaxb.formatted.output", true);
-//    	  map.put(Marshaller.JAXB_SCHEMA_LOCATION, "http://igsn.org/schema/kernel-v.1.0 https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd");
+//    	  map.put(Marshaller.JAXB_SCHEMA_LOCATION, "http://igsn.org/schema/kernel-v.1.0 https://igsn.csiro.au/schemas/2.0/igsn-csiro-v2.0.xsd");
 //    	  jaxb2Marshaller.setMarshallerProperties(map);
 //    	  try{
-//    		  jaxb2Marshaller.setSchema(new UrlResource("https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd"));
+//    		  jaxb2Marshaller.setSchema(new UrlResource("https://igsn.csiro.au/schemas/2.0/igsn-csiro-v2.0.xsd"));
 //    	  }catch(MalformedURLException e){
 //    		  e.printStackTrace();
 //    		  return null;
@@ -44,10 +44,10 @@ public class AppConfig {
 //	  jaxb2Marshaller.setPackagesToScan("org.csiro.igsn.bindings.*");
 //	  Map<String,Object> map = new HashMap<String,Object>();
 //	  map.put("jaxb.formatted.output", true);
-//	  map.put(Marshaller.JAXB_SCHEMA_LOCATION, "http://igsn.org/schema/kernel-v.1.0 https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd");
+//	  map.put(Marshaller.JAXB_SCHEMA_LOCATION, "http://igsn.org/schema/kernel-v.1.0 https://igsn.csiro.au/schemas/2.0/igsn-csiro-v2.0.xsd");
 //	  jaxb2Marshaller.setMarshallerProperties(map);
 //	  try{
-//		  jaxb2Marshaller.setSchema(new UrlResource("https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd"));
+//		  jaxb2Marshaller.setSchema(new UrlResource("https://igsn.csiro.au/schemas/2.0/igsn-csiro-v2.0.xsd"));
 //	  }catch(MalformedURLException e){
 //		  e.printStackTrace();
 //		  return null;

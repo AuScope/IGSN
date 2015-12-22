@@ -2,9 +2,9 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.4.3
+-- Dumped from database version 9.3.5
 -- Dumped by pg_dump version 9.4.0
--- Started on 2015-08-05 15:29:35
+-- Started on 2015-12-22 11:14:15
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -13,106 +13,33 @@ SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 
---
--- TOC entry 7 (class 2615 OID 228924)
--- Name: topology; Type: SCHEMA; Schema: -; Owner: -
---
-
-CREATE SCHEMA topology;
-
-
---
--- TOC entry 238 (class 3079 OID 11861)
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- TOC entry 3619 (class 0 OID 0)
--- Dependencies: 238
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
---
--- TOC entry 239 (class 3079 OID 227637)
--- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
-
-
---
--- TOC entry 3620 (class 0 OID 0)
--- Dependencies: 239
--- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
-
-
---
--- TOC entry 240 (class 3079 OID 228925)
--- Name: postgis_topology; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS postgis_topology WITH SCHEMA topology;
-
-
---
--- TOC entry 3621 (class 0 OID 0)
--- Dependencies: 240
--- Name: EXTENSION postgis_topology; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION postgis_topology IS 'PostGIS topology spatial types and functions';
-
-
 SET search_path = public, pg_catalog;
-
---
--- TOC entry 193 (class 1259 OID 229109)
--- Name: allocator_allocator_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE allocator_allocator_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 
 SET default_with_oids = false;
 
 --
--- TOC entry 235 (class 1259 OID 229471)
+-- TOC entry 241 (class 1259 OID 33992)
 -- Name: allocator; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE allocator (
-    allocator_id integer DEFAULT nextval('allocator_allocator_id_seq'::regclass) NOT NULL,
+    allocatorid integer NOT NULL,
     comments text,
-    contact_email character varying(255) NOT NULL,
-    contact_name character varying(100) NOT NULL,
+    contactemail character varying(255) NOT NULL,
+    contactname character varying(80) NOT NULL,
     created timestamp without time zone,
-    is_active boolean,
-    username character varying(255) NOT NULL,
-    password character varying(255) NOT NULL,
-    allocator_prefix integer NOT NULL
+    username character varying(50) NOT NULL,
+    password character varying(50),
+    isactive boolean
 );
 
 
 --
--- TOC entry 195 (class 1259 OID 229123)
--- Name: cv_classification_classification_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 242 (class 1259 OID 33998)
+-- Name: allocator_allocatorid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE cv_classification_classification_id_seq
+CREATE SEQUENCE allocator_allocatorid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -121,23 +48,42 @@ CREATE SEQUENCE cv_classification_classification_id_seq
 
 
 --
--- TOC entry 194 (class 1259 OID 229118)
--- Name: cv_classification; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3825 (class 0 OID 0)
+-- Dependencies: 242
+-- Name: allocator_allocatorid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-CREATE TABLE cv_classification (
-    classification_id integer DEFAULT nextval('cv_classification_classification_id_seq'::regclass) NOT NULL,
-    identifier character varying(100) NOT NULL,
-    terms character varying(300)
+ALTER SEQUENCE allocator_allocatorid_seq OWNED BY allocator.allocatorid;
+
+
+--
+-- TOC entry 243 (class 1259 OID 34000)
+-- Name: allocator_prefixes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE allocator_prefixes (
+    allocator integer NOT NULL,
+    prefixes integer NOT NULL
 );
 
 
 --
--- TOC entry 197 (class 1259 OID 229131)
--- Name: cv_resourcestypes_resource_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 244 (class 1259 OID 34003)
+-- Name: cv_related_identifiertype; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE cv_resourcestypes_resource_type_id_seq
+CREATE TABLE cv_related_identifiertype (
+    objectid integer NOT NULL,
+    relatedidentifiertype character varying(20) NOT NULL
+);
+
+
+--
+-- TOC entry 245 (class 1259 OID 34006)
+-- Name: cv_related_identifiertype_objectid_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE cv_related_identifiertype_objectid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -146,23 +92,20 @@ CREATE SEQUENCE cv_resourcestypes_resource_type_id_seq
 
 
 --
--- TOC entry 196 (class 1259 OID 229126)
--- Name: cv_resourcestype; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3826 (class 0 OID 0)
+-- Dependencies: 245
+-- Name: cv_related_identifiertype_objectid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-CREATE TABLE cv_resourcestype (
-    resource_type_id integer DEFAULT nextval('cv_resourcestypes_resource_type_id_seq'::regclass) NOT NULL,
-    name character varying(50) NOT NULL,
-    link character varying(200)
-);
+ALTER SEQUENCE cv_related_identifiertype_objectid_seq OWNED BY cv_related_identifiertype.objectid;
 
 
 --
--- TOC entry 199 (class 1259 OID 229143)
--- Name: cv_sampletype_sample_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 246 (class 1259 OID 34008)
+-- Name: cv_resource_relationshiptype_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE cv_sampletype_sample_type_id_seq
+CREATE SEQUENCE cv_resource_relationshiptype_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -171,24 +114,68 @@ CREATE SEQUENCE cv_sampletype_sample_type_id_seq
 
 
 --
--- TOC entry 198 (class 1259 OID 229135)
+-- TOC entry 247 (class 1259 OID 34010)
+-- Name: cv_resource_relationshiptype; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE cv_resource_relationshiptype (
+    id integer DEFAULT nextval('cv_resource_relationshiptype_seq'::regclass) NOT NULL,
+    relationship_type character varying(100)
+);
+
+
+--
+-- TOC entry 248 (class 1259 OID 34014)
+-- Name: cv_samplematerial; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE cv_samplematerial (
+    materialid integer NOT NULL,
+    materialidentifier character varying(250) NOT NULL,
+    materialdesc character varying(45)
+);
+
+
+--
+-- TOC entry 249 (class 1259 OID 34017)
+-- Name: cv_samplematerial_materialid_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE cv_samplematerial_materialid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 3827 (class 0 OID 0)
+-- Dependencies: 249
+-- Name: cv_samplematerial_materialid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE cv_samplematerial_materialid_seq OWNED BY cv_samplematerial.materialid;
+
+
+--
+-- TOC entry 250 (class 1259 OID 34019)
 -- Name: cv_sampletype; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE cv_sampletype (
-    sample_type_id integer DEFAULT nextval('cv_sampletype_sample_type_id_seq'::regclass) NOT NULL,
-    term character varying(255) NOT NULL,
-    definition text,
-    link text
+    sampletypeid integer NOT NULL,
+    sampletypeidentifier character varying(255) NOT NULL,
+    sampletypedefinition text
 );
 
 
 --
--- TOC entry 201 (class 1259 OID 229154)
--- Name: cv_samplingfeature_feature_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 251 (class 1259 OID 34025)
+-- Name: cv_sampletype_sampletypeid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE cv_samplingfeature_feature_id_seq
+CREATE SEQUENCE cv_sampletype_sampletypeid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -197,24 +184,33 @@ CREATE SEQUENCE cv_samplingfeature_feature_id_seq
 
 
 --
--- TOC entry 200 (class 1259 OID 229146)
+-- TOC entry 3828 (class 0 OID 0)
+-- Dependencies: 251
+-- Name: cv_sampletype_sampletypeid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE cv_sampletype_sampletypeid_seq OWNED BY cv_sampletype.sampletypeid;
+
+
+--
+-- TOC entry 252 (class 1259 OID 34027)
 -- Name: cv_samplingfeature; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE cv_samplingfeature (
-    feature_id integer DEFAULT nextval('cv_samplingfeature_feature_id_seq'::regclass) NOT NULL,
+    featureid integer NOT NULL,
     name character varying(80),
     definition text,
-    identifier character varying(255)
+    identifier character varying(255) NOT NULL
 );
 
 
 --
--- TOC entry 203 (class 1259 OID 229165)
--- Name: cv_samplingmethod_method_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 253 (class 1259 OID 34033)
+-- Name: cv_samplingfeature_featureid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE cv_samplingmethod_method_id_seq
+CREATE SEQUENCE cv_samplingfeature_featureid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -223,24 +219,32 @@ CREATE SEQUENCE cv_samplingmethod_method_id_seq
 
 
 --
--- TOC entry 202 (class 1259 OID 229157)
+-- TOC entry 3829 (class 0 OID 0)
+-- Dependencies: 253
+-- Name: cv_samplingfeature_featureid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE cv_samplingfeature_featureid_seq OWNED BY cv_samplingfeature.featureid;
+
+
+--
+-- TOC entry 254 (class 1259 OID 34035)
 -- Name: cv_samplingmethod; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE cv_samplingmethod (
-    method_id integer DEFAULT nextval('cv_samplingmethod_method_id_seq'::regclass) NOT NULL,
-    method_name character varying(80) NOT NULL,
-    method_description text NOT NULL,
-    method_link text
+    methodid integer NOT NULL,
+    methodidentifier character varying(255) NOT NULL,
+    methoddescription text NOT NULL
 );
 
 
 --
--- TOC entry 205 (class 1259 OID 229176)
--- Name: cv_spatialreferences_spatial_ref_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 255 (class 1259 OID 34041)
+-- Name: cv_samplingmethod_methodid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE cv_spatialreferences_spatial_ref_id_seq
+CREATE SEQUENCE cv_samplingmethod_methodid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -249,126 +253,33 @@ CREATE SEQUENCE cv_spatialreferences_spatial_ref_id_seq
 
 
 --
--- TOC entry 204 (class 1259 OID 229168)
--- Name: cv_spatialreferences; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3830 (class 0 OID 0)
+-- Dependencies: 255
+-- Name: cv_samplingmethod_methodid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-CREATE TABLE cv_spatialreferences (
-    spatial_ref_id integer DEFAULT nextval('cv_spatialreferences_spatial_ref_id_seq'::regclass) NOT NULL,
-    srs_code integer NOT NULL,
-    srs_name character varying(255) NOT NULL,
-    is_geographic boolean,
-    description text
-);
+ALTER SEQUENCE cv_samplingmethod_methodid_seq OWNED BY cv_samplingmethod.methodid;
 
 
 --
--- TOC entry 207 (class 1259 OID 229187)
--- Name: cv_units_units_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE cv_units_units_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- TOC entry 206 (class 1259 OID 229179)
--- Name: cv_units; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE cv_units (
-    units_id integer DEFAULT nextval('cv_units_units_id_seq'::regclass) NOT NULL,
-    units_name character varying(255) NOT NULL,
-    units_type character varying(255) NOT NULL,
-    units_abbreviation character varying(255) NOT NULL
-);
-
-
---
--- TOC entry 208 (class 1259 OID 229190)
--- Name: cv_variables; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE cv_variables (
-    term character varying(255) NOT NULL,
-    definition text
-);
-
-
---
--- TOC entry 210 (class 1259 OID 229206)
--- Name: cv_verticaldatum_vertical_datum_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE cv_verticaldatum_vertical_datum_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- TOC entry 209 (class 1259 OID 229198)
--- Name: cv_verticaldatum; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE cv_verticaldatum (
-    vertical_datum_id integer DEFAULT nextval('cv_verticaldatum_vertical_datum_id_seq'::regclass) NOT NULL,
-    term character varying(255) NOT NULL,
-    definition text
-);
-
-
---
--- TOC entry 237 (class 1259 OID 229507)
--- Name: hibernate_sequence; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE hibernate_sequence
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- TOC entry 192 (class 1259 OID 229090)
--- Name: prefix_object_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE prefix_object_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- TOC entry 236 (class 1259 OID 229490)
+-- TOC entry 256 (class 1259 OID 34043)
 -- Name: prefix; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE prefix (
-    object_id integer DEFAULT nextval('prefix_object_id_seq'::regclass) NOT NULL,
-    prefix character varying(50) NOT NULL,
-    created timestamp without time zone DEFAULT now() NOT NULL,
-    version integer NOT NULL
+    id integer NOT NULL,
+    prefix character varying(15) NOT NULL,
+    created timestamp without time zone,
+    version integer
 );
 
 
 --
--- TOC entry 212 (class 1259 OID 229229)
--- Name: registrant_registrant_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 257 (class 1259 OID 34046)
+-- Name: prefix_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE registrant_registrant_id_seq
+CREATE SEQUENCE prefix_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -377,32 +288,49 @@ CREATE SEQUENCE registrant_registrant_id_seq
 
 
 --
--- TOC entry 211 (class 1259 OID 229209)
+-- TOC entry 3831 (class 0 OID 0)
+-- Dependencies: 257
+-- Name: prefix_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE prefix_id_seq OWNED BY prefix.id;
+
+
+--
+-- TOC entry 258 (class 1259 OID 34048)
 -- Name: registrant; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE registrant (
-    registrant_id integer DEFAULT nextval('registrant_registrant_id_seq'::regclass) NOT NULL,
-    email character varying(255) NOT NULL,
-    username character varying(80) NOT NULL,
-    created timestamp without time zone DEFAULT now(),
-    igsn_quota_allowed integer NOT NULL,
-    igsn_quota_used integer NOT NULL,
-    is_active boolean,
-    name character varying(255) NOT NULL,
-    password character varying NOT NULL,
-    updated timestamp without time zone DEFAULT now() NOT NULL,
+    registrantid integer NOT NULL,
+    registrantname character varying(255) NOT NULL,
+    registrantemail character varying(255) NOT NULL,
+    created timestamp without time zone,
+    username character varying(50) NOT NULL,
+    password character varying(50) NOT NULL,
+    updated timestamp without time zone,
     allocator integer NOT NULL,
-    registrant_prefix integer NOT NULL
+    isactive boolean
 );
 
 
 --
--- TOC entry 214 (class 1259 OID 229287)
--- Name: sample_sample_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 259 (class 1259 OID 34054)
+-- Name: registrant_prefixes; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE sample_sample_id_seq
+CREATE TABLE registrant_prefixes (
+    registrant integer NOT NULL,
+    prefixes integer NOT NULL
+);
+
+
+--
+-- TOC entry 260 (class 1259 OID 34057)
+-- Name: registrant_registrantid_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE registrant_registrantid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -411,48 +339,69 @@ CREATE SEQUENCE sample_sample_id_seq
 
 
 --
--- TOC entry 213 (class 1259 OID 229232)
+-- TOC entry 3832 (class 0 OID 0)
+-- Dependencies: 260
+-- Name: registrant_registrantid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE registrant_registrantid_seq OWNED BY registrant.registrantid;
+
+
+--
+-- TOC entry 261 (class 1259 OID 34059)
 -- Name: sample; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE sample (
-    sample_id integer DEFAULT nextval('sample_sample_id_seq'::regclass) NOT NULL,
-    sample_type integer NOT NULL,
-    sample_name character varying(255) NOT NULL,
-    other_name character varying(255),
-    igsn character varying(255),
-    classification integer,
+    sampleid integer NOT NULL,
+    samplename character varying(255) NOT NULL,
+    othername character varying(255),
+    igsn character varying(255) NOT NULL,
+    landingpage character varying(250) NOT NULL,
+    classification character varying(255),
+    classificationidentifier character varying(255),
     purpose text,
-    is_public boolean NOT NULL,
+    samplinglocgeom geometry(Geometry,4326),
+    samplinglocsrs character varying(20),
+    elevation character varying(30),
+    verticaldatum character varying(20),
+    locality character varying(300),
+    samplingstart timestamp without time zone,
+    samplingend timestamp without time zone,
+    samplingmethod integer,
+    samplingcampaign text,
     comment text,
-    sampling_start timestamp without time zone,
-    sampling_end timestamp without time zone,
-    lat_long_datum_id integer,
-    elevation double precision,
-    elevation_unit integer,
-    local_projection_id integer,
-    locality character varying(200),
-    sampling_method integer,
-    sampling_feature_id integer,
-    sample_size double precision,
-    sample_size_unit integer,
     registrant integer NOT NULL,
-    sampling_campaign text,
-    created timestamp without time zone DEFAULT now(),
-    modified timestamp without time zone DEFAULT now(),
-    modified_by character varying(80),
-    lat_lon geometry(Point,4326),
-    localxy geometry(Point,4326),
-    latlon_end geometry(Point,4326)
+    created timestamp without time zone NOT NULL,
+    modified timestamp without time zone,
+    physicalsamplestatus integer,
+    registrationstatus integer,
+    ispublic boolean,
+    elevation_units character varying(30),
+    samplingloc_nilreason character varying(100),
+    samplingtime_nilreason character varying(100)
 );
 
 
 --
--- TOC entry 218 (class 1259 OID 229324)
--- Name: sample_features_mapping_object_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 262 (class 1259 OID 34065)
+-- Name: sample_collector; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE sample_features_mapping_object_id_seq
+CREATE TABLE sample_collector (
+    collectorid integer NOT NULL,
+    collector text NOT NULL,
+    collectoridentifier character varying(255),
+    sampleid integer NOT NULL
+);
+
+
+--
+-- TOC entry 263 (class 1259 OID 34071)
+-- Name: sample_collector_collectorid_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE sample_collector_collectorid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -461,23 +410,32 @@ CREATE SEQUENCE sample_features_mapping_object_id_seq
 
 
 --
--- TOC entry 217 (class 1259 OID 229309)
+-- TOC entry 3833 (class 0 OID 0)
+-- Dependencies: 263
+-- Name: sample_collector_collectorid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE sample_collector_collectorid_seq OWNED BY sample_collector.collectorid;
+
+
+--
+-- TOC entry 264 (class 1259 OID 34073)
 -- Name: sample_features_mapping; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE sample_features_mapping (
-    object_id integer DEFAULT nextval('sample_features_mapping_object_id_seq'::regclass) NOT NULL,
-    sample_id integer NOT NULL,
-    feature_id integer NOT NULL
+    objectid integer NOT NULL,
+    sampleid integer NOT NULL,
+    featureid integer NOT NULL
 );
 
 
 --
--- TOC entry 220 (class 1259 OID 229340)
--- Name: samplecollector_collector_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 265 (class 1259 OID 34076)
+-- Name: sample_features_mapping_objectid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE samplecollector_collector_id_seq
+CREATE SEQUENCE sample_features_mapping_objectid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -486,23 +444,31 @@ CREATE SEQUENCE samplecollector_collector_id_seq
 
 
 --
--- TOC entry 219 (class 1259 OID 229327)
--- Name: samplecollector; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3834 (class 0 OID 0)
+-- Dependencies: 265
+-- Name: sample_features_mapping_objectid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-CREATE TABLE samplecollector (
-    collector_id integer DEFAULT nextval('samplecollector_collector_id_seq'::regclass) NOT NULL,
-    collector text NOT NULL,
-    sample_id integer NOT NULL
+ALTER SEQUENCE sample_features_mapping_objectid_seq OWNED BY sample_features_mapping.objectid;
+
+
+--
+-- TOC entry 266 (class 1259 OID 34078)
+-- Name: sample_material; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE sample_material (
+    sampleid integer NOT NULL,
+    materialid integer NOT NULL
 );
 
 
 --
--- TOC entry 222 (class 1259 OID 229356)
--- Name: samplecuration_sample_curation_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 267 (class 1259 OID 34081)
+-- Name: sample_sampleid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE samplecuration_sample_curation_id_seq
+CREATE SEQUENCE sample_sampleid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -511,37 +477,47 @@ CREATE SEQUENCE samplecuration_sample_curation_id_seq
 
 
 --
--- TOC entry 221 (class 1259 OID 229343)
+-- TOC entry 3835 (class 0 OID 0)
+-- Dependencies: 267
+-- Name: sample_sampleid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE sample_sampleid_seq OWNED BY sample.sampleid;
+
+
+--
+-- TOC entry 268 (class 1259 OID 34083)
+-- Name: sample_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE sample_types (
+    sampleid integer NOT NULL,
+    sampletypeid integer NOT NULL
+);
+
+
+--
+-- TOC entry 269 (class 1259 OID 34086)
 -- Name: samplecuration; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE samplecuration (
-    sample_curation_id integer DEFAULT nextval('samplecuration_sample_curation_id_seq'::regclass) NOT NULL,
-    sample_id integer NOT NULL,
-    curation_location text,
-    curator text,
-    curation_start timestamp without time zone,
-    curation_end timestamp without time zone,
+    samplecurationid integer NOT NULL,
+    sampleid integer NOT NULL,
+    curationlocation text,
+    curator text NOT NULL,
+    curationstart timestamp without time zone,
+    curationend timestamp without time zone,
     comments text
 );
 
 
 --
--- TOC entry 3622 (class 0 OID 0)
--- Dependencies: 221
--- Name: COLUMN samplecuration.curator; Type: COMMENT; Schema: public; Owner: -
+-- TOC entry 270 (class 1259 OID 34092)
+-- Name: samplecuration_samplecurationid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN samplecuration.curator IS '
-';
-
-
---
--- TOC entry 226 (class 1259 OID 229385)
--- Name: samplegroup_sample_group_id; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE samplegroup_sample_group_id
+CREATE SEQUENCE samplecuration_samplecurationid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -550,76 +526,60 @@ CREATE SEQUENCE samplegroup_sample_group_id
 
 
 --
--- TOC entry 225 (class 1259 OID 229370)
--- Name: samplegroup; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3836 (class 0 OID 0)
+-- Dependencies: 270
+-- Name: samplecuration_samplecurationid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-CREATE TABLE samplegroup (
-    group_id integer DEFAULT nextval('samplegroup_sample_group_id'::regclass) NOT NULL,
-    sample_id integer NOT NULL,
-    sample_group_id integer NOT NULL
+ALTER SEQUENCE samplecuration_samplecurationid_seq OWNED BY samplecuration.samplecurationid;
+
+
+--
+-- TOC entry 271 (class 1259 OID 34094)
+-- Name: sampledfeatures_featureid_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE sampledfeatures_featureid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 272 (class 1259 OID 34096)
+-- Name: sampledfeatures; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE sampledfeatures (
+    featureid integer DEFAULT nextval('sampledfeatures_featureid_seq'::regclass) NOT NULL,
+    featuretype character varying(200) NOT NULL,
+    featurename character varying(200) NOT NULL
 );
 
 
 --
--- TOC entry 224 (class 1259 OID 229367)
--- Name: samplegroupdesc_group_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE samplegroupdesc_group_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- TOC entry 223 (class 1259 OID 229359)
--- Name: samplegroupdesc; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE samplegroupdesc (
-    group_id integer DEFAULT nextval('samplegroupdesc_group_id_seq'::regclass) NOT NULL,
-    group_description text
-);
-
-
---
--- TOC entry 228 (class 1259 OID 229406)
--- Name: sampleresources_sample_resource_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE sampleresources_sample_resource_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- TOC entry 227 (class 1259 OID 229388)
+-- TOC entry 273 (class 1259 OID 34100)
 -- Name: sampleresources; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE sampleresources (
-    sample_resource_id integer DEFAULT nextval('sampleresources_sample_resource_id_seq'::regclass) NOT NULL,
-    sample_id integer NOT NULL,
-    resource_type integer NOT NULL,
-    resource_name character varying(150),
-    resource_path character varying(500),
-    added_by character varying(200),
-    added_date timestamp without time zone
+    sampleresourcesid integer NOT NULL,
+    sampleid integer NOT NULL,
+    resourceidentifier character varying(250) NOT NULL,
+    resourceidentifertype integer,
+    addeddate timestamp without time zone,
+    resourcerelationtype integer
 );
 
 
 --
--- TOC entry 216 (class 1259 OID 229306)
--- Name: samplingfeatures_feature_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 274 (class 1259 OID 34103)
+-- Name: sampleresources_sampleresourcesid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE samplingfeatures_feature_id_seq
+CREATE SEQUENCE sampleresources_sampleresourcesid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -628,28 +588,49 @@ CREATE SEQUENCE samplingfeatures_feature_id_seq
 
 
 --
--- TOC entry 215 (class 1259 OID 229291)
+-- TOC entry 3837 (class 0 OID 0)
+-- Dependencies: 274
+-- Name: sampleresources_sampleresourcesid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE sampleresources_sampleresourcesid_seq OWNED BY sampleresources.sampleresourcesid;
+
+
+--
+-- TOC entry 275 (class 1259 OID 34105)
+-- Name: sampling_sampled_mapping; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE sampling_sampled_mapping (
+    samplingfeature_id integer,
+    sampledfeature_id integer
+);
+
+
+--
+-- TOC entry 276 (class 1259 OID 34108)
 -- Name: samplingfeatures; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE samplingfeatures (
-    feature_id integer DEFAULT nextval('samplingfeatures_feature_id_seq'::regclass) NOT NULL,
-    feature_name character varying(100) NOT NULL,
-    feature_srs integer,
-    feature_locality character varying(150),
-    feature_type integer,
-    feature_latlon geometry(Point,4326),
-    feature_latlon_end geometry(Point,4326),
-    feature_local_xy geometry(Point,4326)
+    featureid integer NOT NULL,
+    featurename character varying(100) NOT NULL,
+    featuregeom geometry(Geometry,4326),
+    featuresrs character varying(20),
+    elevation character varying(30),
+    verticaldatum character varying(20),
+    featurelocality character varying(150),
+    featuretype integer,
+    elevation_units character varying(30)
 );
 
 
 --
--- TOC entry 230 (class 1259 OID 229417)
--- Name: sites_site_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 277 (class 1259 OID 34114)
+-- Name: samplingfeatures_featureid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE sites_site_id_seq
+CREATE SEQUENCE samplingfeatures_featureid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -658,37 +639,33 @@ CREATE SEQUENCE sites_site_id_seq
 
 
 --
--- TOC entry 229 (class 1259 OID 229409)
--- Name: sites; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3838 (class 0 OID 0)
+-- Dependencies: 277
+-- Name: samplingfeatures_featureid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-CREATE TABLE sites (
-    site_id integer DEFAULT nextval('sites_site_id_seq'::regclass) NOT NULL,
-    site_code character varying(80) NOT NULL,
-    site_name character varying(255) NOT NULL,
-    lat double precision NOT NULL,
-    lon double precision NOT NULL,
-    latlon_datum_id integer NOT NULL,
-    site_type integer,
-    elevation double precision,
-    elevation_unit integer,
-    vertical_datum integer,
-    local_x double precision,
-    local_y double precision,
-    local_projection_id integer,
-    state character varying(255),
-    county character varying(255),
-    comments text,
-    bounding_box geometry(Geometry,4326)
+ALTER SEQUENCE samplingfeatures_featureid_seq OWNED BY samplingfeatures.featureid;
+
+
+--
+-- TOC entry 278 (class 1259 OID 34116)
+-- Name: status; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE status (
+    statusid integer NOT NULL,
+    statuscode character varying(25) NOT NULL,
+    statusabout character varying(45),
+    statusdesc character varying(100)
 );
 
 
 --
--- TOC entry 232 (class 1259 OID 229428)
--- Name: users_source_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 279 (class 1259 OID 34119)
+-- Name: status_statusid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE users_source_id_seq
+CREATE SEQUENCE status_statusid_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -697,482 +674,1196 @@ CREATE SEQUENCE users_source_id_seq
 
 
 --
--- TOC entry 231 (class 1259 OID 229420)
--- Name: users; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3839 (class 0 OID 0)
+-- Dependencies: 279
+-- Name: status_statusid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-CREATE TABLE users (
-    source_id integer DEFAULT nextval('users_source_id_seq'::regclass) NOT NULL,
-    organization character varying(255) NOT NULL,
-    source_description text,
-    source_link text,
-    contact_name character varying(255) NOT NULL,
-    phone character varying(255),
-    email character varying(255),
-    address character varying(255),
-    city character varying(255),
-    state character varying(255),
-    zip_code character varying(255),
-    metadata_id integer
-);
+ALTER SEQUENCE status_statusid_seq OWNED BY status.statusid;
 
 
 --
--- TOC entry 3623 (class 0 OID 0)
--- Dependencies: 231
--- Name: COLUMN users.source_link; Type: COMMENT; Schema: public; Owner: -
+-- TOC entry 3553 (class 2604 OID 34121)
+-- Name: allocatorid; Type: DEFAULT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN users.source_link IS '
-
-';
+ALTER TABLE ONLY allocator ALTER COLUMN allocatorid SET DEFAULT nextval('allocator_allocatorid_seq'::regclass);
 
 
 --
--- TOC entry 234 (class 1259 OID 229445)
--- Name: variables_variable_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- TOC entry 3554 (class 2604 OID 34122)
+-- Name: objectid; Type: DEFAULT; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE variables_variable_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+ALTER TABLE ONLY cv_related_identifiertype ALTER COLUMN objectid SET DEFAULT nextval('cv_related_identifiertype_objectid_seq'::regclass);
 
 
 --
--- TOC entry 233 (class 1259 OID 229432)
--- Name: variables; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 3556 (class 2604 OID 34123)
+-- Name: materialid; Type: DEFAULT; Schema: public; Owner: -
 --
 
-CREATE TABLE variables (
-    variable_id integer DEFAULT nextval('variables_variable_id_seq'::regclass) NOT NULL,
-    variable_code character varying(50) NOT NULL,
-    variable_name character varying(255) NOT NULL,
-    variable_units_id integer NOT NULL,
-    sample_medium character varying(255) NOT NULL,
-    value_type character varying(255) NOT NULL,
-    data_type character varying(255) NOT NULL,
-    general_category character varying(255) NOT NULL
-);
+ALTER TABLE ONLY cv_samplematerial ALTER COLUMN materialid SET DEFAULT nextval('cv_samplematerial_materialid_seq'::regclass);
 
 
 --
--- TOC entry 3471 (class 2606 OID 229478)
--- Name: pk_allocator_allocator_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3557 (class 2604 OID 34124)
+-- Name: sampletypeid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY cv_sampletype ALTER COLUMN sampletypeid SET DEFAULT nextval('cv_sampletype_sampletypeid_seq'::regclass);
+
+
+--
+-- TOC entry 3558 (class 2604 OID 34125)
+-- Name: featureid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY cv_samplingfeature ALTER COLUMN featureid SET DEFAULT nextval('cv_samplingfeature_featureid_seq'::regclass);
+
+
+--
+-- TOC entry 3559 (class 2604 OID 34126)
+-- Name: methodid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY cv_samplingmethod ALTER COLUMN methodid SET DEFAULT nextval('cv_samplingmethod_methodid_seq'::regclass);
+
+
+--
+-- TOC entry 3560 (class 2604 OID 34127)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY prefix ALTER COLUMN id SET DEFAULT nextval('prefix_id_seq'::regclass);
+
+
+--
+-- TOC entry 3561 (class 2604 OID 34128)
+-- Name: registrantid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY registrant ALTER COLUMN registrantid SET DEFAULT nextval('registrant_registrantid_seq'::regclass);
+
+
+--
+-- TOC entry 3562 (class 2604 OID 34129)
+-- Name: sampleid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample ALTER COLUMN sampleid SET DEFAULT nextval('sample_sampleid_seq'::regclass);
+
+
+--
+-- TOC entry 3563 (class 2604 OID 34130)
+-- Name: collectorid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample_collector ALTER COLUMN collectorid SET DEFAULT nextval('sample_collector_collectorid_seq'::regclass);
+
+
+--
+-- TOC entry 3564 (class 2604 OID 34131)
+-- Name: objectid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample_features_mapping ALTER COLUMN objectid SET DEFAULT nextval('sample_features_mapping_objectid_seq'::regclass);
+
+
+--
+-- TOC entry 3565 (class 2604 OID 34132)
+-- Name: samplecurationid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY samplecuration ALTER COLUMN samplecurationid SET DEFAULT nextval('samplecuration_samplecurationid_seq'::regclass);
+
+
+--
+-- TOC entry 3567 (class 2604 OID 34133)
+-- Name: sampleresourcesid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sampleresources ALTER COLUMN sampleresourcesid SET DEFAULT nextval('sampleresources_sampleresourcesid_seq'::regclass);
+
+
+--
+-- TOC entry 3568 (class 2604 OID 34134)
+-- Name: featureid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY samplingfeatures ALTER COLUMN featureid SET DEFAULT nextval('samplingfeatures_featureid_seq'::regclass);
+
+
+--
+-- TOC entry 3569 (class 2604 OID 34135)
+-- Name: statusid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY status ALTER COLUMN statusid SET DEFAULT nextval('status_statusid_seq'::regclass);
+
+
+--
+-- TOC entry 3781 (class 0 OID 33992)
+-- Dependencies: 241
+-- Data for Name: allocator; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO allocator VALUES (8, 'ADMIN', 'victor.tey@csiro.au', 'Victor', '2015-12-01 12:39:49.000992', 'tey006', NULL, true);
+INSERT INTO allocator VALUES (7, 'ADMIN', 'anusuriya.devaraju@csiro.au', 'Anu', '2012-06-10 00:00:00', 'deva', 'suriya', NULL);
+
+
+--
+-- TOC entry 3840 (class 0 OID 0)
+-- Dependencies: 242
+-- Name: allocator_allocatorid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('allocator_allocatorid_seq', 8, true);
+
+
+--
+-- TOC entry 3783 (class 0 OID 34000)
+-- Dependencies: 243
+-- Data for Name: allocator_prefixes; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO allocator_prefixes VALUES (7, 14);
+INSERT INTO allocator_prefixes VALUES (8, 14);
+
+
+--
+-- TOC entry 3784 (class 0 OID 34003)
+-- Dependencies: 244
+-- Data for Name: cv_related_identifiertype; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO cv_related_identifiertype VALUES (1, 'doi');
+INSERT INTO cv_related_identifiertype VALUES (2, 'handle');
+INSERT INTO cv_related_identifiertype VALUES (4, 'url');
+INSERT INTO cv_related_identifiertype VALUES (5, 'urn');
+INSERT INTO cv_related_identifiertype VALUES (3, 'lsid');
+
+
+--
+-- TOC entry 3841 (class 0 OID 0)
+-- Dependencies: 245
+-- Name: cv_related_identifiertype_objectid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('cv_related_identifiertype_objectid_seq', 5, true);
+
+
+--
+-- TOC entry 3787 (class 0 OID 34010)
+-- Dependencies: 247
+-- Data for Name: cv_resource_relationshiptype; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO cv_resource_relationshiptype VALUES (1, 'IsCitedBy');
+INSERT INTO cv_resource_relationshiptype VALUES (2, 'IsPartOf');
+INSERT INTO cv_resource_relationshiptype VALUES (3, 'HasPart');
+INSERT INTO cv_resource_relationshiptype VALUES (4, 'IsReferencedBy');
+INSERT INTO cv_resource_relationshiptype VALUES (5, 'References');
+INSERT INTO cv_resource_relationshiptype VALUES (6, 'IsDocumentedBy');
+INSERT INTO cv_resource_relationshiptype VALUES (7, 'Documents');
+INSERT INTO cv_resource_relationshiptype VALUES (8, 'IsCompiledBy');
+INSERT INTO cv_resource_relationshiptype VALUES (9, 'Compiles');
+INSERT INTO cv_resource_relationshiptype VALUES (10, 'IsVariantFormOf');
+INSERT INTO cv_resource_relationshiptype VALUES (11, 'IsOriginalFormOf');
+
+
+--
+-- TOC entry 3842 (class 0 OID 0)
+-- Dependencies: 246
+-- Name: cv_resource_relationshiptype_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('cv_resource_relationshiptype_seq', 11, true);
+
+
+--
+-- TOC entry 3788 (class 0 OID 34014)
+-- Dependencies: 248
+-- Data for Name: cv_samplematerial; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO cv_samplematerial VALUES (1, 'http://vocabulary.odm2.org/medium/air', 'material desc');
+INSERT INTO cv_samplematerial VALUES (2, 'http://vocabulary.odm2.org/medium/gas', 'material 2 desc');
+INSERT INTO cv_samplematerial VALUES (3, 'http://vocabulary.odm2.org/medium/ice', 'ice');
+INSERT INTO cv_samplematerial VALUES (4, 'http://vocabulary.odm2.org/medium/liquidAqueous', 'Liquid Aqueous');
+INSERT INTO cv_samplematerial VALUES (5, 'http://vocabulary.odm2.org/medium/liquidOrganic', 'liquid organic');
+INSERT INTO cv_samplematerial VALUES (6, 'http://vocabulary.odm2.org/medium/mineral', 'Mineral');
+INSERT INTO cv_samplematerial VALUES (7, 'http://vocabulary.odm2.org/medium/notApplicable', 'Not Applicable');
+INSERT INTO cv_samplematerial VALUES (8, 'http://vocabulary.odm2.org/medium/organism', 'organism');
+INSERT INTO cv_samplematerial VALUES (9, 'http://vocabulary.odm2.org/medium/other', 'Other');
+INSERT INTO cv_samplematerial VALUES (10, 'http://vocabulary.odm2.org/medium/particulate', 'Particulate');
+INSERT INTO cv_samplematerial VALUES (11, 'http://vocabulary.odm2.org/medium/rock', 'Rock');
+INSERT INTO cv_samplematerial VALUES (12, 'http://vocabulary.odm2.org/medium/sediment', 'Sediment');
+INSERT INTO cv_samplematerial VALUES (13, 'http://vocabulary.odm2.org/medium/snow', 'Snow');
+INSERT INTO cv_samplematerial VALUES (14, 'http://vocabulary.odm2.org/medium/soil', 'Soil');
+INSERT INTO cv_samplematerial VALUES (15, 'http://vocabulary.odm2.org/medium/tissue', 'Tissue');
+INSERT INTO cv_samplematerial VALUES (16, 'http://vocabulary.odm2.org/medium/unknown', 'unknown');
+INSERT INTO cv_samplematerial VALUES (17, 'http://www.opengis.net/def/nil/OGC/0/inapplicable', 'inapplicable');
+INSERT INTO cv_samplematerial VALUES (18, 'http://www.opengis.net/def/nil/OGC/0/missing', 'missing');
+INSERT INTO cv_samplematerial VALUES (19, 'http://www.opengis.net/def/nil/OGC/0/template', 'template');
+INSERT INTO cv_samplematerial VALUES (20, 'http://www.opengis.net/def/nil/OGC/0/unknown', 'unknown');
+INSERT INTO cv_samplematerial VALUES (21, 'http://www.opengis.net/def/nil/OGC/0/withheld', 'withheld');
+
+
+--
+-- TOC entry 3843 (class 0 OID 0)
+-- Dependencies: 249
+-- Name: cv_samplematerial_materialid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('cv_samplematerial_materialid_seq', 21, true);
+
+
+--
+-- TOC entry 3790 (class 0 OID 34019)
+-- Dependencies: 250
+-- Data for Name: cv_sampletype; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO cv_sampletype VALUES (1, 'http://vocabulary.odm2.org/specimentype/automated', 'Automated');
+INSERT INTO cv_sampletype VALUES (2, 'http://vocabulary.odm2.org/specimentype/core', 'Core');
+INSERT INTO cv_sampletype VALUES (3, 'http://vocabulary.odm2.org/specimentype/coreHalfRound', 'Core Half Round');
+INSERT INTO cv_sampletype VALUES (4, 'http://vocabulary.odm2.org/specimentype/corePiece', 'Core Piece');
+INSERT INTO cv_sampletype VALUES (5, 'http://vocabulary.odm2.org/specimentype/coreQuarterRound', 'Core Quater Round');
+INSERT INTO cv_sampletype VALUES (6, 'http://vocabulary.odm2.org/specimentype/coreSection', 'Core Section');
+INSERT INTO cv_sampletype VALUES (7, 'http://vocabulary.odm2.org/specimentype/coreSectionHalf', 'Core Section Half');
+INSERT INTO cv_sampletype VALUES (8, 'http://vocabulary.odm2.org/specimentype/coreSub-Piece', 'Core Sub-Piece');
+INSERT INTO cv_sampletype VALUES (9, 'http://vocabulary.odm2.org/specimentype/coreWholeRound', 'Core Whole Round');
+INSERT INTO cv_sampletype VALUES (10, 'http://vocabulary.odm2.org/specimentype/cuttings', 'Cutting');
+INSERT INTO cv_sampletype VALUES (11, 'http://vocabulary.odm2.org/specimentype/dredge', 'Dredge');
+INSERT INTO cv_sampletype VALUES (12, 'http://vocabulary.odm2.org/specimentype/foliageDigestion', 'Foliage Digestion');
+INSERT INTO cv_sampletype VALUES (13, 'http://vocabulary.odm2.org/specimentype/foliageLeaching', 'Foliage Leaching');
+INSERT INTO cv_sampletype VALUES (14, 'http://vocabulary.odm2.org/specimentype/forestFloorDigestion', 'Forest Floor Digestion');
+INSERT INTO cv_sampletype VALUES (15, 'http://vocabulary.odm2.org/specimentype/individualSample', 'Individual Sample');
+INSERT INTO cv_sampletype VALUES (16, 'http://vocabulary.odm2.org/specimentype/litterFallDigestion', 'Litter Fall Digestion');
+INSERT INTO cv_sampletype VALUES (17, 'http://vocabulary.odm2.org/specimentype/other', 'Others');
+INSERT INTO cv_sampletype VALUES (18, 'http://vocabulary.odm2.org/specimentype/petriDishDryDeposition', 'Petri Dish Dry Deposition');
+INSERT INTO cv_sampletype VALUES (38, 'http://vocabulary.odm2.org/specimentype/precipitationBulk', 'Precipitation Bulk');
+INSERT INTO cv_sampletype VALUES (39, 'http://vocabulary.odm2.org/specimentype/rockPowder', 'Rock Powder');
+INSERT INTO cv_sampletype VALUES (40, 'http://vocabulary.odm2.org/specimentype/standardReferenceSpecimen', 'Standard Reference Specimen');
+INSERT INTO cv_sampletype VALUES (41, 'http://vocabulary.odm2.org/specimentype/terrestrialSection', 'Terrestrial Section');
+INSERT INTO cv_sampletype VALUES (42, 'http://vocabulary.odm2.org/specimentype/theSpecimenTypeIsUnknown', 'Specimen Type Unknown');
+INSERT INTO cv_sampletype VALUES (43, 'http://vocabulary.odm2.org/specimentype/thinSection', 'Thin Section');
+INSERT INTO cv_sampletype VALUES (44, 'http://www.opengis.net/def/nil/OGC/0/inapplicable', 'inapplicable');
+INSERT INTO cv_sampletype VALUES (45, 'http://www.opengis.net/def/nil/OGC/0/missing', 'missing');
+INSERT INTO cv_sampletype VALUES (46, 'http://www.opengis.net/def/nil/OGC/0/template', 'template');
+INSERT INTO cv_sampletype VALUES (47, 'http://www.opengis.net/def/nil/OGC/0/unknown', 'unknown');
+INSERT INTO cv_sampletype VALUES (48, 'http://www.opengis.net/def/nil/OGC/0/withheld', 'withheld');
+
+
+--
+-- TOC entry 3844 (class 0 OID 0)
+-- Dependencies: 251
+-- Name: cv_sampletype_sampletypeid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('cv_sampletype_sampletypeid_seq', 48, true);
+
+
+--
+-- TOC entry 3792 (class 0 OID 34027)
+-- Dependencies: 252
+-- Data for Name: cv_samplingfeature; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO cv_samplingfeature VALUES (67, 'Borehole', 'Borehole', 'http://vocabulary.odm2.org/samplingfeaturetype/borehole/');
+INSERT INTO cv_samplingfeature VALUES (68, 'Cross Section', 'Cross Section', 'http://vocabulary.odm2.org/samplingfeaturetype/crossSection/');
+INSERT INTO cv_samplingfeature VALUES (69, 'CTD', 'CTD', 'http://vocabulary.odm2.org/samplingfeaturetype/CTD/');
+INSERT INTO cv_samplingfeature VALUES (70, 'Excavation', 'Excavation', 'http://vocabulary.odm2.org/samplingfeaturetype/excavation/');
+INSERT INTO cv_samplingfeature VALUES (71, 'Field Area', 'Field Area', 'http://vocabulary.odm2.org/samplingfeaturetype/fieldArea/');
+INSERT INTO cv_samplingfeature VALUES (72, 'Observation Well', 'Observation Well', 'http://vocabulary.odm2.org/samplingfeaturetype/observationWell/');
+INSERT INTO cv_samplingfeature VALUES (73, 'Quadrat', 'Quadrat', 'http://vocabulary.odm2.org/samplingfeaturetype/quadrat/');
+INSERT INTO cv_samplingfeature VALUES (74, 'Scene', 'Scene', 'http://vocabulary.odm2.org/samplingfeaturetype/scene/');
+INSERT INTO cv_samplingfeature VALUES (75, 'Soil Pit Section', 'Soil Pit Section', 'http://vocabulary.odm2.org/samplingfeaturetype/soilPitSection/');
+
+
+--
+-- TOC entry 3845 (class 0 OID 0)
+-- Dependencies: 253
+-- Name: cv_samplingfeature_featureid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('cv_samplingfeature_featureid_seq', 75, true);
+
+
+--
+-- TOC entry 3794 (class 0 OID 34035)
+-- Dependencies: 254
+-- Data for Name: cv_samplingmethod; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO cv_samplingmethod VALUES (1, 'http://www.opengis.net/def/nil/OGC/0/inapplicable', 'inapplicable');
+INSERT INTO cv_samplingmethod VALUES (2, 'http://www.opengis.net/def/nil/OGC/0/missing', 'missing');
+INSERT INTO cv_samplingmethod VALUES (3, 'http://www.opengis.net/def/nil/OGC/0/template', 'template');
+INSERT INTO cv_samplingmethod VALUES (4, 'http://www.opengis.net/def/nil/OGC/0/unknown', 'unknown');
+INSERT INTO cv_samplingmethod VALUES (5, 'http://www.opengis.net/def/nil/OGC/0/withheld', 'withheld');
+
+
+--
+-- TOC entry 3846 (class 0 OID 0)
+-- Dependencies: 255
+-- Name: cv_samplingmethod_methodid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('cv_samplingmethod_methodid_seq', 5, true);
+
+
+--
+-- TOC entry 3796 (class 0 OID 34043)
+-- Dependencies: 256
+-- Data for Name: prefix; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO prefix VALUES (12, 'CSCAP', '2015-10-28 11:32:16.316', 0);
+INSERT INTO prefix VALUES (14, 'CS', '2015-12-01 17:16:14.706972', NULL);
+INSERT INTO prefix VALUES (11, 'CSRWA', '2015-10-28 11:25:07.44', 0);
+INSERT INTO prefix VALUES (10, 'CSTST', '2015-10-27 14:19:03.130218', 1);
+
+
+--
+-- TOC entry 3847 (class 0 OID 0)
+-- Dependencies: 257
+-- Name: prefix_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('prefix_id_seq', 15, true);
+
+
+--
+-- TOC entry 3798 (class 0 OID 34048)
+-- Dependencies: 258
+-- Data for Name: registrant; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO registrant VALUES (3, 'capricon', 'Pavel.Golodoniuc@csiro.au', '2015-07-01 00:00:00', 'capri', '1234', NULL, 7, NULL);
+INSERT INTO registrant VALUES (5, 'rockstore', 'Victor.tey@csiro.au', '2015-10-27 14:18:02.32004', 'sa-rockstore', '1234', NULL, 7, NULL);
+INSERT INTO registrant VALUES (12, 'victor', 'victor.tey@csiro.au', '2015-12-22 14:01:44.907572', 'tey006', '1234', NULL, 7, NULL);
+
+
+--
+-- TOC entry 3799 (class 0 OID 34054)
+-- Dependencies: 259
+-- Data for Name: registrant_prefixes; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO registrant_prefixes VALUES (5, 10);
+INSERT INTO registrant_prefixes VALUES (5, 11);
+INSERT INTO registrant_prefixes VALUES (3, 12);
+
+
+--
+-- TOC entry 3848 (class 0 OID 0)
+-- Dependencies: 260
+-- Name: registrant_registrantid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('registrant_registrantid_seq', 12, true);
+
+
+--
+-- TOC entry 3801 (class 0 OID 34059)
+-- Dependencies: 261
+-- Data for Name: sample; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3802 (class 0 OID 34065)
+-- Dependencies: 262
+-- Data for Name: sample_collector; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3849 (class 0 OID 0)
+-- Dependencies: 263
+-- Name: sample_collector_collectorid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('sample_collector_collectorid_seq', 1, true);
+
+
+--
+-- TOC entry 3804 (class 0 OID 34073)
+-- Dependencies: 264
+-- Data for Name: sample_features_mapping; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3850 (class 0 OID 0)
+-- Dependencies: 265
+-- Name: sample_features_mapping_objectid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('sample_features_mapping_objectid_seq', 1, true);
+
+
+--
+-- TOC entry 3806 (class 0 OID 34078)
+-- Dependencies: 266
+-- Data for Name: sample_material; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3851 (class 0 OID 0)
+-- Dependencies: 267
+-- Name: sample_sampleid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('sample_sampleid_seq', 1, true);
+
+
+--
+-- TOC entry 3808 (class 0 OID 34083)
+-- Dependencies: 268
+-- Data for Name: sample_types; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3809 (class 0 OID 34086)
+-- Dependencies: 269
+-- Data for Name: samplecuration; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3852 (class 0 OID 0)
+-- Dependencies: 270
+-- Name: samplecuration_samplecurationid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('samplecuration_samplecurationid_seq', 1, true);
+
+
+--
+-- TOC entry 3812 (class 0 OID 34096)
+-- Dependencies: 272
+-- Data for Name: sampledfeatures; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3853 (class 0 OID 0)
+-- Dependencies: 271
+-- Name: sampledfeatures_featureid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('sampledfeatures_featureid_seq', 1, true);
+
+
+--
+-- TOC entry 3813 (class 0 OID 34100)
+-- Dependencies: 273
+-- Data for Name: sampleresources; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3854 (class 0 OID 0)
+-- Dependencies: 274
+-- Name: sampleresources_sampleresourcesid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('sampleresources_sampleresourcesid_seq', 1, true);
+
+
+--
+-- TOC entry 3815 (class 0 OID 34105)
+-- Dependencies: 275
+-- Data for Name: sampling_sampled_mapping; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3816 (class 0 OID 34108)
+-- Dependencies: 276
+-- Data for Name: samplingfeatures; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3855 (class 0 OID 0)
+-- Dependencies: 277
+-- Name: samplingfeatures_featureid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('samplingfeatures_featureid_seq', 1, true);
+
+
+--
+-- TOC entry 3551 (class 0 OID 27329)
+-- Dependencies: 174
+-- Data for Name: spatial_ref_sys; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- TOC entry 3818 (class 0 OID 34116)
+-- Dependencies: 278
+-- Data for Name: status; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO status VALUES (1, 'Destroyed', 'Physical sample', 'T physical sample has been destroyed');
+INSERT INTO status VALUES (2, 'Submitted', 'Identifier', 'Tate of the initial IGSN registration');
+INSERT INTO status VALUES (3, 'Registered', 'Identifier', 'The IGSN is registered');
+INSERT INTO status VALUES (6, 'Updated', 'Sample Metadata', 'The sample metadata has been updated');
+INSERT INTO status VALUES (7, 'Deprecated', 'Identifier', 'The IGSN is deprecated or no longer relevant, e.g., due to duplicate registration');
+
+
+--
+-- TOC entry 3856 (class 0 OID 0)
+-- Dependencies: 279
+-- Name: status_statusid_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('status_statusid_seq', 7, true);
+
+
+--
+-- TOC entry 3573 (class 2606 OID 34138)
+-- Name: allocator_prefixes_primary; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY allocator_prefixes
+    ADD CONSTRAINT allocator_prefixes_primary PRIMARY KEY (allocator, prefixes);
+
+
+--
+-- TOC entry 3571 (class 2606 OID 34140)
+-- Name: allocator_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY allocator
-    ADD CONSTRAINT pk_allocator_allocator_id PRIMARY KEY (allocator_id);
+    ADD CONSTRAINT allocator_primary PRIMARY KEY (allocatorid);
 
 
 --
--- TOC entry 3429 (class 2606 OID 229122)
--- Name: pk_cv_classification; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3576 (class 2606 OID 34142)
+-- Name: cv_related_identifiertype_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY cv_classification
-    ADD CONSTRAINT pk_cv_classification PRIMARY KEY (classification_id);
-
-
---
--- TOC entry 3431 (class 2606 OID 229130)
--- Name: pk_cv_resourcestypes_resource_type_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY cv_resourcestype
-    ADD CONSTRAINT pk_cv_resourcestypes_resource_type_id PRIMARY KEY (resource_type_id);
+ALTER TABLE ONLY cv_related_identifiertype
+    ADD CONSTRAINT cv_related_identifiertype_primary PRIMARY KEY (objectid);
 
 
 --
--- TOC entry 3433 (class 2606 OID 229142)
--- Name: pk_cv_sampletype_sample_type_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3580 (class 2606 OID 34144)
+-- Name: cv_samplematerial_primary; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY cv_samplematerial
+    ADD CONSTRAINT cv_samplematerial_primary PRIMARY KEY (materialid);
+
+
+--
+-- TOC entry 3582 (class 2606 OID 34146)
+-- Name: cv_sampletype_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY cv_sampletype
-    ADD CONSTRAINT pk_cv_sampletype_sample_type_id PRIMARY KEY (sample_type_id);
+    ADD CONSTRAINT cv_sampletype_primary PRIMARY KEY (sampletypeid);
 
 
 --
--- TOC entry 3435 (class 2606 OID 229153)
--- Name: pk_cv_samplingfeature_feature_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3588 (class 2606 OID 34148)
+-- Name: cv_samplingfeature_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY cv_samplingfeature
-    ADD CONSTRAINT pk_cv_samplingfeature_feature_id PRIMARY KEY (feature_id);
+    ADD CONSTRAINT cv_samplingfeature_primary PRIMARY KEY (featureid);
 
 
 --
--- TOC entry 3437 (class 2606 OID 229164)
--- Name: pk_cv_samplingmethod_method_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3590 (class 2606 OID 34150)
+-- Name: cv_samplingmethod_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY cv_samplingmethod
-    ADD CONSTRAINT pk_cv_samplingmethod_method_id PRIMARY KEY (method_id);
+    ADD CONSTRAINT cv_samplingmethod_primary PRIMARY KEY (methodid);
 
 
 --
--- TOC entry 3439 (class 2606 OID 229175)
--- Name: pk_cv_spatialreferences_spatial_ref_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3578 (class 2606 OID 34152)
+-- Name: pk_cv_resource_relationship_type_id; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY cv_spatialreferences
-    ADD CONSTRAINT pk_cv_spatialreferences_spatial_ref_id PRIMARY KEY (spatial_ref_id);
-
-
---
--- TOC entry 3441 (class 2606 OID 229186)
--- Name: pk_cv_units_units_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY cv_units
-    ADD CONSTRAINT pk_cv_units_units_id PRIMARY KEY (units_id);
+ALTER TABLE ONLY cv_resource_relationshiptype
+    ADD CONSTRAINT pk_cv_resource_relationship_type_id PRIMARY KEY (id);
 
 
 --
--- TOC entry 3443 (class 2606 OID 229197)
--- Name: pk_cv_variables_term; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3595 (class 2606 OID 34154)
+-- Name: pk_registrant_registrantid; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY cv_variables
-    ADD CONSTRAINT pk_cv_variables_term PRIMARY KEY (term);
-
-
---
--- TOC entry 3445 (class 2606 OID 229205)
--- Name: pk_cv_verticaldatum_vertical_datum_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY cv_verticaldatum
-    ADD CONSTRAINT pk_cv_verticaldatum_vertical_datum_id PRIMARY KEY (vertical_datum_id);
+ALTER TABLE ONLY registrant
+    ADD CONSTRAINT pk_registrant_registrantid PRIMARY KEY (registrantid);
 
 
 --
--- TOC entry 3473 (class 2606 OID 229496)
--- Name: pk_prefix_object_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3611 (class 2606 OID 34156)
+-- Name: pk_sample_sampleid; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample
+    ADD CONSTRAINT pk_sample_sampleid PRIMARY KEY (sampleid);
+
+
+--
+-- TOC entry 3632 (class 2606 OID 34158)
+-- Name: pk_sampledfeatures_featureid; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sampledfeatures
+    ADD CONSTRAINT pk_sampledfeatures_featureid PRIMARY KEY (featureid);
+
+
+--
+-- TOC entry 3592 (class 2606 OID 34160)
+-- Name: prefix_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY prefix
-    ADD CONSTRAINT pk_prefix_object_id PRIMARY KEY (object_id);
+    ADD CONSTRAINT prefix_primary PRIMARY KEY (id);
 
 
 --
--- TOC entry 3447 (class 2606 OID 229218)
--- Name: pk_registrant_registrant_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3604 (class 2606 OID 34162)
+-- Name: registrant_prefixes_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY registrant
-    ADD CONSTRAINT pk_registrant_registrant_id PRIMARY KEY (registrant_id);
+ALTER TABLE ONLY registrant_prefixes
+    ADD CONSTRAINT registrant_prefixes_primary PRIMARY KEY (registrant, prefixes);
 
 
 --
--- TOC entry 3453 (class 2606 OID 229313)
--- Name: pk_sample_features_mapping_object_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3617 (class 2606 OID 34164)
+-- Name: sample_collector_primary; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample_collector
+    ADD CONSTRAINT sample_collector_primary PRIMARY KEY (collectorid);
+
+
+--
+-- TOC entry 3621 (class 2606 OID 34166)
+-- Name: sample_features_mapping_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY sample_features_mapping
-    ADD CONSTRAINT pk_sample_features_mapping_object_id PRIMARY KEY (object_id);
+    ADD CONSTRAINT sample_features_mapping_primary PRIMARY KEY (objectid);
 
 
 --
--- TOC entry 3449 (class 2606 OID 229241)
--- Name: pk_sample_sample_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3624 (class 2606 OID 34168)
+-- Name: sample_material_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sample
-    ADD CONSTRAINT pk_sample_sample_id PRIMARY KEY (sample_id);
-
-
---
--- TOC entry 3455 (class 2606 OID 229334)
--- Name: pk_samplecollector_collector_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY samplecollector
-    ADD CONSTRAINT pk_samplecollector_collector_id PRIMARY KEY (collector_id);
+ALTER TABLE ONLY sample_material
+    ADD CONSTRAINT sample_material_primary PRIMARY KEY (sampleid, materialid);
 
 
 --
--- TOC entry 3457 (class 2606 OID 229350)
--- Name: pk_samplecuration_sample_curation_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3627 (class 2606 OID 34170)
+-- Name: sample_types_primary; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample_types
+    ADD CONSTRAINT sample_types_primary PRIMARY KEY (sampleid, sampletypeid);
+
+
+--
+-- TOC entry 3630 (class 2606 OID 34172)
+-- Name: samplecuration_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY samplecuration
-    ADD CONSTRAINT pk_samplecuration_sample_curation_id PRIMARY KEY (sample_curation_id);
+    ADD CONSTRAINT samplecuration_primary PRIMARY KEY (samplecurationid);
 
 
 --
--- TOC entry 3461 (class 2606 OID 229374)
--- Name: pk_samplegroup_sample_group_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY samplegroup
-    ADD CONSTRAINT pk_samplegroup_sample_group_id PRIMARY KEY (sample_group_id);
-
-
---
--- TOC entry 3459 (class 2606 OID 229366)
--- Name: pk_samplegroupdesc_group_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY samplegroupdesc
-    ADD CONSTRAINT pk_samplegroupdesc_group_id PRIMARY KEY (group_id);
-
-
---
--- TOC entry 3463 (class 2606 OID 229395)
--- Name: pk_sampleresources_sample_resource_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3636 (class 2606 OID 34174)
+-- Name: sampleresources_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY sampleresources
-    ADD CONSTRAINT pk_sampleresources_sample_resource_id PRIMARY KEY (sample_resource_id);
+    ADD CONSTRAINT sampleresources_primary PRIMARY KEY (sampleresourcesid);
 
 
 --
--- TOC entry 3451 (class 2606 OID 229295)
--- Name: pk_samplingfeatures_feature_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3640 (class 2606 OID 34176)
+-- Name: samplingfeatures_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY samplingfeatures
-    ADD CONSTRAINT pk_samplingfeatures_feature_id PRIMARY KEY (feature_id);
+    ADD CONSTRAINT samplingfeatures_primary PRIMARY KEY (featureid);
 
 
 --
--- TOC entry 3465 (class 2606 OID 229416)
--- Name: pk_sites_site_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3642 (class 2606 OID 34178)
+-- Name: status_primary; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sites
-    ADD CONSTRAINT pk_sites_site_id PRIMARY KEY (site_id);
-
-
---
--- TOC entry 3467 (class 2606 OID 229427)
--- Name: pk_users_source_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY users
-    ADD CONSTRAINT pk_users_source_id PRIMARY KEY (source_id);
+ALTER TABLE ONLY status
+    ADD CONSTRAINT status_primary PRIMARY KEY (statusid);
 
 
 --
--- TOC entry 3469 (class 2606 OID 229439)
--- Name: pk_variables_variable_id; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3585 (class 2606 OID 34180)
+-- Name: uk_1okumlu40xm0wh2ln7j0d6cti; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY variables
-    ADD CONSTRAINT pk_variables_variable_id PRIMARY KEY (variable_id);
-
-
---
--- TOC entry 3496 (class 2606 OID 229497)
--- Name: fk_allocator_allocator_prefix; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY allocator
-    ADD CONSTRAINT fk_allocator_allocator_prefix FOREIGN KEY (allocator_prefix) REFERENCES prefix(object_id);
+ALTER TABLE ONLY cv_sampletype
+    ADD CONSTRAINT uk_1okumlu40xm0wh2ln7j0d6cti UNIQUE (sampletypeidentifier);
 
 
 --
--- TOC entry 3474 (class 2606 OID 229484)
--- Name: fk_registrant_allocator; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3597 (class 2606 OID 34182)
+-- Name: uk_on19yvmjqgud1jp4f251gajwy; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY registrant
-    ADD CONSTRAINT fk_registrant_allocator FOREIGN KEY (allocator) REFERENCES allocator(allocator_id);
+    ADD CONSTRAINT uk_on19yvmjqgud1jp4f251gajwy UNIQUE (username);
 
 
 --
--- TOC entry 3475 (class 2606 OID 229502)
--- Name: fk_registrant_registrant_prefix; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3599 (class 2606 OID 34184)
+-- Name: unique_registrant; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY registrant
-    ADD CONSTRAINT fk_registrant_registrant_prefix FOREIGN KEY (registrant_prefix) REFERENCES prefix(object_id);
+    ADD CONSTRAINT unique_registrant UNIQUE (registrantid);
 
 
 --
--- TOC entry 3476 (class 2606 OID 229242)
--- Name: fk_sample_classification; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_classification FOREIGN KEY (classification) REFERENCES cv_classification(classification_id);
-
-
---
--- TOC entry 3477 (class 2606 OID 229247)
--- Name: fk_sample_elevation_unit; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3614 (class 2606 OID 34186)
+-- Name: unique_samples_igsn; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_elevation_unit FOREIGN KEY (elevation_unit) REFERENCES cv_units(units_id);
+    ADD CONSTRAINT unique_samples_igsn UNIQUE (igsn);
 
 
 --
--- TOC entry 3478 (class 2606 OID 229252)
--- Name: fk_sample_feature; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3574 (class 1259 OID 34187)
+-- Name: fk_ap_prefix_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_feature FOREIGN KEY (sampling_feature_id) REFERENCES cv_samplingfeature(feature_id);
+CREATE INDEX fk_ap_prefix_idx ON allocator_prefixes USING btree (prefixes);
 
 
 --
--- TOC entry 3487 (class 2606 OID 229314)
--- Name: fk_sample_features_mapping_feature_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3615 (class 1259 OID 34188)
+-- Name: fk_collector_sample_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_collector_sample_idx ON sample_collector USING btree (sampleid);
+
+
+--
+-- TOC entry 3628 (class 1259 OID 34189)
+-- Name: fk_curation_sample_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_curation_sample_idx ON samplecuration USING btree (sampleid);
+
+
+--
+-- TOC entry 3637 (class 1259 OID 34190)
+-- Name: fk_feature_srs_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_feature_srs_idx ON samplingfeatures USING btree (featuresrs);
+
+
+--
+-- TOC entry 3618 (class 1259 OID 34191)
+-- Name: fk_feature_tosample_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_feature_tosample_idx ON sample_features_mapping USING btree (featureid);
+
+
+--
+-- TOC entry 3638 (class 1259 OID 34192)
+-- Name: fk_feature_type_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_feature_type_idx ON samplingfeatures USING btree (featuretype);
+
+
+--
+-- TOC entry 3625 (class 1259 OID 34193)
+-- Name: fk_mapping_sampletype_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_mapping_sampletype_idx ON sample_types USING btree (sampletypeid);
+
+
+--
+-- TOC entry 3605 (class 1259 OID 34194)
+-- Name: fk_metadatastatus_status_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_metadatastatus_status_idx ON sample USING btree (registrationstatus);
+
+
+--
+-- TOC entry 3606 (class 1259 OID 34195)
+-- Name: fk_physical_samplestatus_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_physical_samplestatus_idx ON sample USING btree (physicalsamplestatus);
+
+
+--
+-- TOC entry 3593 (class 1259 OID 34196)
+-- Name: fk_registrant_alloc_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_registrant_alloc_idx ON registrant USING btree (allocator);
+
+
+--
+-- TOC entry 3633 (class 1259 OID 34197)
+-- Name: fk_resource_identtype_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_resource_identtype_idx ON sampleresources USING btree (resourceidentifertype);
+
+
+--
+-- TOC entry 3634 (class 1259 OID 34198)
+-- Name: fk_resources_sample_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_resources_sample_idx ON sampleresources USING btree (sampleid);
+
+
+--
+-- TOC entry 3601 (class 1259 OID 34199)
+-- Name: fk_rp_prefix_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_rp_prefix_idx ON registrant_prefixes USING btree (prefixes);
+
+
+--
+-- TOC entry 3607 (class 1259 OID 34200)
+-- Name: fk_sample_classification_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_sample_classification_idx ON sample USING btree (classification);
+
+
+--
+-- TOC entry 3608 (class 1259 OID 34201)
+-- Name: fk_sample_method_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_sample_method_idx ON sample USING btree (samplingmethod);
+
+
+--
+-- TOC entry 3619 (class 1259 OID 34202)
+-- Name: fk_sample_tofeature_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_sample_tofeature_idx ON sample_features_mapping USING btree (sampleid);
+
+
+--
+-- TOC entry 3622 (class 1259 OID 34203)
+-- Name: fk_sm_material_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX fk_sm_material_idx ON sample_material USING btree (materialid);
+
+
+--
+-- TOC entry 3602 (class 1259 OID 34204)
+-- Name: idx_registrant_prefixes; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_registrant_prefixes ON registrant_prefixes USING btree (registrant);
+
+
+--
+-- TOC entry 3609 (class 1259 OID 34205)
+-- Name: igsn_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX igsn_unique ON sample USING btree (igsn);
+
+
+--
+-- TOC entry 3612 (class 1259 OID 34206)
+-- Name: sampleid_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX sampleid_unique ON sample USING btree (sampleid);
+
+
+--
+-- TOC entry 3583 (class 1259 OID 34207)
+-- Name: term_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX term_unique ON cv_sampletype USING btree (sampletypeidentifier);
+
+
+--
+-- TOC entry 3586 (class 1259 OID 34208)
+-- Name: uk_6y9um0475rj9vd5v07isob9ct; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uk_6y9um0475rj9vd5v07isob9ct ON cv_sampletype USING btree (sampletypeidentifier);
+
+
+--
+-- TOC entry 3600 (class 1259 OID 34209)
+-- Name: username_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX username_unique ON registrant USING btree (username);
+
+
+--
+-- TOC entry 3644 (class 2606 OID 34210)
+-- Name: fk_ap_allocator; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY allocator_prefixes
+    ADD CONSTRAINT fk_ap_allocator FOREIGN KEY (allocator) REFERENCES allocator(allocatorid);
+
+
+--
+-- TOC entry 3643 (class 2606 OID 34215)
+-- Name: fk_ap_prefix; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY allocator_prefixes
+    ADD CONSTRAINT fk_ap_prefix FOREIGN KEY (prefixes) REFERENCES prefix(id);
+
+
+--
+-- TOC entry 3652 (class 2606 OID 34220)
+-- Name: fk_collector_sample; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample_collector
+    ADD CONSTRAINT fk_collector_sample FOREIGN KEY (sampleid) REFERENCES sample(sampleid);
+
+
+--
+-- TOC entry 3659 (class 2606 OID 34225)
+-- Name: fk_curator_sample; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY samplecuration
+    ADD CONSTRAINT fk_curator_sample FOREIGN KEY (sampleid) REFERENCES sample(sampleid);
+
+
+--
+-- TOC entry 3654 (class 2606 OID 34230)
+-- Name: fk_feature_tosample; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY sample_features_mapping
-    ADD CONSTRAINT fk_sample_features_mapping_feature_id FOREIGN KEY (feature_id) REFERENCES cv_samplingfeature(feature_id);
+    ADD CONSTRAINT fk_feature_tosample FOREIGN KEY (featureid) REFERENCES samplingfeatures(featureid);
 
 
 --
--- TOC entry 3488 (class 2606 OID 229319)
--- Name: fk_sample_features_mapping_sample_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3666 (class 2606 OID 34235)
+-- Name: fk_feature_type; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sample_features_mapping
-    ADD CONSTRAINT fk_sample_features_mapping_sample_id FOREIGN KEY (sample_id) REFERENCES sample(sample_id);
+ALTER TABLE ONLY samplingfeatures
+    ADD CONSTRAINT fk_feature_type FOREIGN KEY (featuretype) REFERENCES cv_samplingfeature(featureid);
 
 
 --
--- TOC entry 3483 (class 2606 OID 229277)
--- Name: fk_sample_lat_long_datum; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3665 (class 2606 OID 34240)
+-- Name: fk_ft4tgm0x2o8jw6w1wp8tyb2n3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sampling_sampled_mapping
+    ADD CONSTRAINT fk_ft4tgm0x2o8jw6w1wp8tyb2n3 FOREIGN KEY (sampledfeature_id) REFERENCES samplingfeatures(featureid);
+
+
+--
+-- TOC entry 3658 (class 2606 OID 34245)
+-- Name: fk_mapping_sample; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample_types
+    ADD CONSTRAINT fk_mapping_sample FOREIGN KEY (sampleid) REFERENCES sample(sampleid);
+
+
+--
+-- TOC entry 3657 (class 2606 OID 34250)
+-- Name: fk_mapping_sampletype; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample_types
+    ADD CONSTRAINT fk_mapping_sampletype FOREIGN KEY (sampletypeid) REFERENCES cv_sampletype(sampletypeid);
+
+
+--
+-- TOC entry 3651 (class 2606 OID 34255)
+-- Name: fk_metadatastatus_status; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_lat_long_datum FOREIGN KEY (lat_long_datum_id) REFERENCES cv_spatialreferences(spatial_ref_id);
+    ADD CONSTRAINT fk_metadatastatus_status FOREIGN KEY (registrationstatus) REFERENCES status(statusid);
 
 
 --
--- TOC entry 3484 (class 2606 OID 229282)
--- Name: fk_sample_local_projection_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3650 (class 2606 OID 34260)
+-- Name: fk_physical_samplestatus; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_local_projection_id FOREIGN KEY (local_projection_id) REFERENCES cv_spatialreferences(spatial_ref_id);
+    ADD CONSTRAINT fk_physical_samplestatus FOREIGN KEY (physicalsamplestatus) REFERENCES status(statusid);
 
 
 --
--- TOC entry 3479 (class 2606 OID 229257)
+-- TOC entry 3645 (class 2606 OID 34265)
+-- Name: fk_registrant_alloc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY registrant
+    ADD CONSTRAINT fk_registrant_alloc FOREIGN KEY (allocator) REFERENCES allocator(allocatorid);
+
+
+--
+-- TOC entry 3647 (class 2606 OID 34270)
+-- Name: fk_registrant_prefixes; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY registrant_prefixes
+    ADD CONSTRAINT fk_registrant_prefixes FOREIGN KEY (registrant) REFERENCES registrant(registrantid);
+
+
+--
+-- TOC entry 3662 (class 2606 OID 34275)
+-- Name: fk_resource_identtype; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sampleresources
+    ADD CONSTRAINT fk_resource_identtype FOREIGN KEY (resourceidentifertype) REFERENCES cv_related_identifiertype(objectid);
+
+
+--
+-- TOC entry 3661 (class 2606 OID 34280)
+-- Name: fk_resource_sample; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sampleresources
+    ADD CONSTRAINT fk_resource_sample FOREIGN KEY (sampleid) REFERENCES sample(sampleid);
+
+
+--
+-- TOC entry 3660 (class 2606 OID 34285)
+-- Name: fk_resourcerelationtype; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sampleresources
+    ADD CONSTRAINT fk_resourcerelationtype FOREIGN KEY (resourcerelationtype) REFERENCES cv_resource_relationshiptype(id);
+
+
+--
+-- TOC entry 3646 (class 2606 OID 34290)
+-- Name: fk_rp_prefix; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY registrant_prefixes
+    ADD CONSTRAINT fk_rp_prefix FOREIGN KEY (prefixes) REFERENCES prefix(id);
+
+
+--
+-- TOC entry 3649 (class 2606 OID 34295)
+-- Name: fk_sample_method; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sample
+    ADD CONSTRAINT fk_sample_method FOREIGN KEY (samplingmethod) REFERENCES cv_samplingmethod(methodid);
+
+
+--
+-- TOC entry 3648 (class 2606 OID 34300)
 -- Name: fk_sample_registrant; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_registrant FOREIGN KEY (registrant) REFERENCES registrant(registrant_id);
+    ADD CONSTRAINT fk_sample_registrant FOREIGN KEY (registrant) REFERENCES registrant(registrantid);
 
 
 --
--- TOC entry 3482 (class 2606 OID 229272)
--- Name: fk_sample_sample_size_unit; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3653 (class 2606 OID 34305)
+-- Name: fk_sample_tofeature; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_sample_size_unit FOREIGN KEY (sample_size_unit) REFERENCES cv_units(units_id);
-
-
---
--- TOC entry 3480 (class 2606 OID 229262)
--- Name: fk_sample_sample_type; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_sample_type FOREIGN KEY (sample_type) REFERENCES cv_sampletype(sample_type_id);
+ALTER TABLE ONLY sample_features_mapping
+    ADD CONSTRAINT fk_sample_tofeature FOREIGN KEY (sampleid) REFERENCES sample(sampleid);
 
 
 --
--- TOC entry 3481 (class 2606 OID 229267)
--- Name: fk_sample_sampling_method; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3664 (class 2606 OID 34310)
+-- Name: fk_samplling_sampled_mapping_sampledfeature; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sample
-    ADD CONSTRAINT fk_sample_sampling_method FOREIGN KEY (sampling_method) REFERENCES cv_samplingmethod(method_id);
-
-
---
--- TOC entry 3489 (class 2606 OID 229335)
--- Name: fk_samplecollector_sample_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY samplecollector
-    ADD CONSTRAINT fk_samplecollector_sample_id FOREIGN KEY (sample_id) REFERENCES sample(sample_id);
+ALTER TABLE ONLY sampling_sampled_mapping
+    ADD CONSTRAINT fk_samplling_sampled_mapping_sampledfeature FOREIGN KEY (sampledfeature_id) REFERENCES sampledfeatures(featureid);
 
 
 --
--- TOC entry 3490 (class 2606 OID 229351)
--- Name: fk_samplecuration_sample_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3663 (class 2606 OID 34315)
+-- Name: fk_samplling_sampled_mapping_samplingfeature; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY samplecuration
-    ADD CONSTRAINT fk_samplecuration_sample_id FOREIGN KEY (sample_id) REFERENCES sample(sample_id);
-
-
---
--- TOC entry 3492 (class 2606 OID 229380)
--- Name: fk_samplegroup_group_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY samplegroup
-    ADD CONSTRAINT fk_samplegroup_group_id FOREIGN KEY (group_id) REFERENCES samplegroupdesc(group_id);
+ALTER TABLE ONLY sampling_sampled_mapping
+    ADD CONSTRAINT fk_samplling_sampled_mapping_samplingfeature FOREIGN KEY (samplingfeature_id) REFERENCES samplingfeatures(featureid);
 
 
 --
--- TOC entry 3491 (class 2606 OID 229375)
--- Name: fk_samplegroup_sample_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3656 (class 2606 OID 34320)
+-- Name: fk_smat_materials; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY samplegroup
-    ADD CONSTRAINT fk_samplegroup_sample_id FOREIGN KEY (sample_id) REFERENCES sample(sample_id);
-
-
---
--- TOC entry 3494 (class 2606 OID 229401)
--- Name: fk_sampleresources_resource_type; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY sampleresources
-    ADD CONSTRAINT fk_sampleresources_resource_type FOREIGN KEY (resource_type) REFERENCES cv_resourcestype(resource_type_id);
+ALTER TABLE ONLY sample_material
+    ADD CONSTRAINT fk_smat_materials FOREIGN KEY (materialid) REFERENCES cv_samplematerial(materialid);
 
 
 --
--- TOC entry 3493 (class 2606 OID 229396)
--- Name: fk_sampleresources_sample_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3655 (class 2606 OID 34325)
+-- Name: fk_smat_sample; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY sampleresources
-    ADD CONSTRAINT fk_sampleresources_sample_id FOREIGN KEY (sample_id) REFERENCES sample(sample_id);
+ALTER TABLE ONLY sample_material
+    ADD CONSTRAINT fk_smat_sample FOREIGN KEY (sampleid) REFERENCES sample(sampleid);
 
 
---
--- TOC entry 3486 (class 2606 OID 229296)
--- Name: fk_samplingfeatures_feature_srs; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY samplingfeatures
-    ADD CONSTRAINT fk_samplingfeatures_feature_srs FOREIGN KEY (feature_srs) REFERENCES cv_spatialreferences(spatial_ref_id);
-
-
---
--- TOC entry 3485 (class 2606 OID 229301)
--- Name: fk_samplingfeatures_feature_type; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY samplingfeatures
-    ADD CONSTRAINT fk_samplingfeatures_feature_type FOREIGN KEY (feature_type) REFERENCES cv_samplingfeature(feature_id);
-
-
---
--- TOC entry 3495 (class 2606 OID 229440)
--- Name: fk_variables_variable_units; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY variables
-    ADD CONSTRAINT fk_variables_variable_units FOREIGN KEY (variable_units_id) REFERENCES cv_units(units_id);
-
-
--- Completed on 2015-08-05 15:29:36
+-- Completed on 2015-12-22 11:14:39
 
 --
 -- PostgreSQL database dump complete

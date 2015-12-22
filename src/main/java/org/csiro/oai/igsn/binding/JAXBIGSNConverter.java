@@ -40,7 +40,7 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 	ObjectFactory objectFactory;
 	final String METAPREFIX="cs_igsn";
 	final String NAMESPACE_FOR_BINDING="http://igsn.org/schema/kernel-v.1.0";
-	final String SCHEMA_LOCATION_FOR_BINDING="https://raw.githubusercontent.com/kitchenprinzessin3880/csiro-igsn-schema/master/igsn-csiro-v2.0.xsd";
+	final String SCHEMA_LOCATION_FOR_BINDING="https://igsn.csiro.au/schemas/2.0/igsn-csiro-v2.0.xsd";
 	final Class XML_ROOT_CLASS = org.csiro.oai.igsn.binding.Samples.Sample.class;
 	
 	public JAXBIGSNConverter(){
