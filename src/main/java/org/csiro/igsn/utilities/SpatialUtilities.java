@@ -12,7 +12,7 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class SpatialUtilities {
 	
-	public static Geometry wktToGeometry(String wkt) {
+	public static Geometry wktToGeometry(String wkt) throws Exception {
 		
 		//VT: spatial store in lon/lat however mapping framework are often in lat/lon
 				//http://postgis.net/2013/08/18/tip_lon_lat/						
@@ -21,7 +21,7 @@ public class SpatialUtilities {
         try {
             geom = fromText.read(wkt);                        
         } catch (Exception e) {
-            return null;
+           throw e;
         }
         return geom;
     }

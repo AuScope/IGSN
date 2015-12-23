@@ -185,7 +185,11 @@ public class JAXBConverter {
 			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
 			wkt.setSrs(sampleFeature.getFeaturesrs());
 			wkt.setSpatialType(getSpatialTypeFromGeometry(sampleFeature.getFeaturegeom()));
-			wkt.setValue(sampleFeature.getFeaturegeom().toText());			
+			if(sampleFeature.getFeaturegeom()!=null){
+				wkt.setValue(sampleFeature.getFeaturegeom().toText());
+			}else{
+				wkt.setValue("Null");
+			}
 			featureLocation.setWkt(wkt);
 			
 			featureLocation.setLocality(sampleFeature.getFeaturelocality());
@@ -232,7 +236,11 @@ public class JAXBConverter {
 			Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt wkt = new Samples.Sample.SamplingFeatures.SamplingFeature.SamplingFeatureLocation.Wkt();
 			wkt.setSrs(sampleEntity.getSamplinglocsrs());
 			wkt.setSpatialType(getSpatialTypeFromGeometry(sampleEntity.getSamplinglocgeom()));
-			wkt.setValue(sampleEntity.getSamplinglocgeom().toText());
+			if(sampleEntity.getSamplinglocgeom()!=null){
+				wkt.setValue(sampleEntity.getSamplinglocgeom().toText());
+			}else{
+				wkt.setValue("Null");
+			}			
 			samplingLocation.setWkt(wkt);
 		}else{
 			samplingLocation.setNilReason(sampleEntity.getSamplinglocNilreason());

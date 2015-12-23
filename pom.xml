@@ -11,7 +11,10 @@
     <issueManagement>
         <system>Jira</system>
         <url>https://jira.csiro.au/browse/AUS</url>
-    </issueManagement>     
+    </issueManagement>   
+    <scm>   
+    	<connection>scm:git:git://github.com/AuScope/IGSN.git</connection>
+	</scm>   
     <!-- Build Configuration -->
     <organization>
         <name>CSIRO</name>
@@ -100,7 +103,7 @@
                 </property>         
             </activation>        
             <build>
-                <finalName>CSIRO-IGSN</finalName>                
+                <finalName>csiro</finalName>                
                 <plugins>                                 
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

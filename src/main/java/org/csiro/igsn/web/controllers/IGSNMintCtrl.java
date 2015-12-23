@@ -159,9 +159,16 @@ public class IGSNMintCtrl {
 						mintEventLog.setDatabaseLog(DatabaseErrorCode.UPDATE_SUCCESS, null);
 						mintEventLogs.add(mintEventLog);
 					}catch(Exception e){
-						mintEventLog.setDatabaseLog(DatabaseErrorCode.UPDATE_ERROR, e.getMessage());
-						mintEventLogs.add(mintEventLog);
-						containsError=true;
+						if(e instanceof javax.persistence.PersistenceException && e.getCause().getCause().getMessage().contains("duplicate key value")){
+							mintEventLog.setDatabaseLog(DatabaseErrorCode.DUPLICATE_KEY, e.getMessage());
+							mintEventLogs.add(mintEventLog);
+							containsError=true;
+						}else{
+							mintEventLog.setDatabaseLog(DatabaseErrorCode.UPDATE_ERROR, e.getMessage());
+							mintEventLogs.add(mintEventLog);
+							containsError=true;
+						}
+						
 					}											
 					
 				}else{
