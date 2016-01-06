@@ -94,7 +94,7 @@ public class OAIPMHCtrl {
 				token.setPage(token.getPage()+1); //VT: going to the next page
 				List<Sample> samples= sampleEntityService.searchSampleByDate(NullUtilities.parseDateYYYYMMDDAllowNull(token.getFrom()), NullUtilities.parseDateYYYYMMDDAllowNull(token.getUntil()), token.getPage());
 				marshalToWrtier(oaiService.getListRecords(samples, token.getMetadataprefix(),token.getFrom(),token.getUntil(),token.getCompleteListSize(),token),
-						response.getWriter(),OAIPMHtype.class,oaiService.getSuitableConverter(metadataPrefix).getXMLRootClass());
+						response.getWriter(),OAIPMHtype.class,oaiService.getSuitableConverter(token.getMetadataprefix()).getXMLRootClass());
 			}
 												
 		}else if(verb.equals(VerbType.LIST_IDENTIFIERS.value())){

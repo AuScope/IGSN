@@ -53,7 +53,7 @@ public class SampleEntityService {
 	ControlledValueEntityService controlledValueEntityService;
 	JAXBConverter jaxbConverter;
 	
-	public static final int PAGING_SIZE=1;
+	public static final int PAGING_SIZE=10;
 	
 	@Autowired
 	public SampleEntityService(ControlledValueEntityService controlledValueEntityService){
