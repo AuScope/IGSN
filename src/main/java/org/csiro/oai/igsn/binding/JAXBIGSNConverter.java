@@ -6,7 +6,6 @@ import java.util.Date;
 import javax.xml.bind.JAXBElement;
 
 import org.csiro.binding.IGSNJAXBInterface;
-
 import org.csiro.igsn.entity.postgres2_0.CvSamplematerial;
 import org.csiro.igsn.entity.postgres2_0.CvSampletype;
 import org.csiro.igsn.entity.postgres2_0.Sample;
@@ -15,18 +14,15 @@ import org.csiro.igsn.entity.postgres2_0.Samplecuration;
 import org.csiro.igsn.entity.postgres2_0.Sampledfeatures;
 import org.csiro.igsn.entity.postgres2_0.Sampleresources;
 import org.csiro.igsn.entity.postgres2_0.Samplingfeatures;
-import org.csiro.igsn.utilities.SpatialUtilities;
-import org.csiro.oai.dc.binding.OaiDcType;
 import org.csiro.oai.igsn.binding.Samples.Sample.MaterialTypes;
 import org.csiro.oai.igsn.binding.Samples.Sample.SampleCollectors;
 import org.csiro.oai.igsn.binding.Samples.Sample.SampleCollectors.Collector;
 import org.csiro.oai.igsn.binding.Samples.Sample.SampleCuration.Curation;
+import org.csiro.oai.igsn.binding.Samples.Sample.SampleCuration.Curation.CurationTime.TimePeriod;
 import org.csiro.oai.igsn.binding.Samples.Sample.SampleTypes;
 import org.csiro.oai.igsn.binding.Samples.Sample.SamplingLocation;
 import org.csiro.oai.igsn.binding.Samples.Sample.SamplingMethod;
 import org.csiro.oai.igsn.binding.Samples.Sample.SamplingTime;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -156,11 +152,18 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 			c.setCurator(sc.getCurator());
 			c.setCurationLocation(sc.getCurationlocation());
 			
-			//VT Set time - Linked to database curation start time
 			Curation.CurationTime curationTime= new Curation.CurationTime();
-			if(sc.getCurationstart()!=null){
+			if(sc.getCurationstart()!=null && sc.getCurationend()==null){
 				cal.setTime(sc.getCurationstart());
 				curationTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));			
+				c.setCurationTime(curationTime);
+			}else if(sc.getCurationstart()!=null && sc.getCurationend()!=null){
+				TimePeriod curationTimePeriod = new TimePeriod();
+				cal.setTime(sc.getCurationstart());
+				curationTimePeriod.setStart(String.valueOf(cal.get(Calendar.YEAR)));
+				cal.setTime(sc.getCurationend());
+				curationTimePeriod.setEnd(String.valueOf(cal.get(Calendar.YEAR)));
+				curationTime.setTimePeriod(curationTimePeriod);			
 				c.setCurationTime(curationTime);
 			}
 			
@@ -294,10 +297,22 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 			samplingTimeJAXBElement.setNil(true);
 			sampleXml.setSamplingTime(samplingTimeJAXBElement);			
 		}else{	
-			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
-			cal.setTime(sampleEntity.getSamplingstart());			    
-			samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
-			sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
+			if(sampleEntity.getSamplingend()==null){
+				Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
+				cal.setTime(sampleEntity.getSamplingstart());			    
+				samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
+				sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
+			}else{
+				Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
+				cal.setTime(sampleEntity.getSamplingstart());	
+				TimePeriod timePeriod = new TimePeriod();
+				cal.setTime(sampleEntity.getSamplingstart());				
+				timePeriod.setStart(String.valueOf(cal.get(Calendar.YEAR)));
+				cal.setTime(sampleEntity.getSamplingend());				
+				timePeriod.setEnd(String.valueOf(cal.get(Calendar.YEAR)));
+				samplingTime.setTimePeriod(timePeriod);
+				sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
+			}
 		}
 		
 		ObjectFactory objFact = new ObjectFactory();

@@ -9,6 +9,7 @@ import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.MaterialTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCollectors.Collector;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curation;
+import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleCuration.Curation.CurationTime.TimePeriod;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SampleTypes;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingLocation;
 import org.csiro.igsn.bindings.allocation2_0.Samples.Sample.SamplingMethod;
@@ -132,9 +133,17 @@ public class JAXBConverter {
 			
 			//VT Set time - Linked to database curation start time
 			Curation.CurationTime curationTime= new Curation.CurationTime();
-			if(sc.getCurationstart()!=null){
+			if(sc.getCurationstart()!=null && sc.getCurationend()==null){
 				cal.setTime(sc.getCurationstart());
 				curationTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));			
+				c.setCurationTime(curationTime);
+			}else if(sc.getCurationstart()!=null && sc.getCurationend()!=null){
+				TimePeriod curationTimePeriod = new TimePeriod();
+				cal.setTime(sc.getCurationstart());
+				curationTimePeriod.setStart(String.valueOf(cal.get(Calendar.YEAR)));
+				cal.setTime(sc.getCurationend());
+				curationTimePeriod.setEnd(String.valueOf(cal.get(Calendar.YEAR)));
+				curationTime.setTimePeriod(curationTimePeriod);			
 				c.setCurationTime(curationTime);
 			}
 			
@@ -268,10 +277,22 @@ public class JAXBConverter {
 			samplingTimeJAXBElement.setNil(true);
 			sampleXml.setSamplingTime(samplingTimeJAXBElement);			
 		}else{	
-			Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
-			cal.setTime(sampleEntity.getSamplingstart());			    
-			samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
-			sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
+			if(sampleEntity.getSamplingend()==null){
+				Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
+				cal.setTime(sampleEntity.getSamplingstart());			    
+				samplingTime.setTimeInstant(String.valueOf(cal.get(Calendar.YEAR)));
+				sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
+			}else{
+				Samples.Sample.SamplingTime samplingTime = new Samples.Sample.SamplingTime();				
+				cal.setTime(sampleEntity.getSamplingstart());	
+				TimePeriod timePeriod = new TimePeriod();
+				cal.setTime(sampleEntity.getSamplingstart());				
+				timePeriod.setStart(String.valueOf(cal.get(Calendar.YEAR)));
+				cal.setTime(sampleEntity.getSamplingend());				
+				timePeriod.setEnd(String.valueOf(cal.get(Calendar.YEAR)));
+				samplingTime.setTimePeriod(timePeriod);
+				sampleXml.setSamplingTime(this.objectFactory.createSamplesSampleSamplingTime(samplingTime));
+			}
 		}
 		
 		return sampleXml;

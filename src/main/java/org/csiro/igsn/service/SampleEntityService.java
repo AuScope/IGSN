@@ -277,7 +277,14 @@ public class SampleEntityService {
 		if(sampleXml.getSamplingTime().isNil()){
 			sampleEntity.setSamplingtimeNilreason(sampleXml.getSamplingTime().getValue().getNilReason());
 		}else{
-			sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getValue().getTimeInstant()));
+			if(sampleXml.getSamplingTime().getValue().getTimeInstant()!=null && !sampleXml.getSamplingTime().getValue().getTimeInstant().isEmpty()){
+				sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getValue().getTimeInstant()));
+				sampleEntity.setSamplingend(null);
+			}else{
+				sampleEntity.setSamplingstart(df.parse(sampleXml.getSamplingTime().getValue().getTimePeriod().getStart()));
+				sampleEntity.setSamplingend(df.parse(sampleXml.getSamplingTime().getValue().getTimePeriod().getEnd()));
+			}
+			
 		}
 			
 		
@@ -315,10 +322,24 @@ public class SampleEntityService {
 		//VT:Curator
 		Set<Samplecuration> samplecurations=new HashSet<Samplecuration>();
 		for(Curation curator:sampleXml.getSampleCuration().getCuration()){
-			if(curator!=null){
-				samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCurator(),
-						curator.getCurationTime()==null || curator.getCurationTime().getTimeInstant()==null?null:df.parse(curator.getCurationTime().getTimeInstant()),
-						null,""));
+			if(curator!=null){				
+				if(curator.getCurationTime()!=null && curator.getCurationTime().getTimeInstant()!=null){
+					samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCurator(),
+							df.parse(curator.getCurationTime().getTimeInstant()),
+							null,
+							""));
+				}else if(curator.getCurationTime()!=null && curator.getCurationTime().getTimePeriod()!=null){
+					samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCurator(),
+							df.parse(curator.getCurationTime().getTimePeriod().getStart()),
+							df.parse(curator.getCurationTime().getTimePeriod().getEnd()),
+							""));
+				}else{
+					samplecurations.add(new Samplecuration(sampleEntity,curator.getCurationLocation(),curator.getCurator(),
+					curator.getCurationTime()==null || curator.getCurationTime().getTimeInstant()==null?null:df.parse(curator.getCurationTime().getTimeInstant()),
+					null,
+					""));
+				}
+				
 			}
 		}
 		if(samplecurations.isEmpty()){
