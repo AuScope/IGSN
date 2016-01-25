@@ -1,6 +1,6 @@
-var app = angular.module('app', ['ngRoute','ngAnimate']);
+var allControllers = angular.module('allControllers', []);
 
-app.controller('RegistrantCtrl', ['$scope','$rootScope','$http',
+allControllers.controller('RegistrantCtrl', ['$scope','$rootScope','$http',
                                   function ($scope,$rootScope,$http) {
 
 	$scope.authorizedUser=false;

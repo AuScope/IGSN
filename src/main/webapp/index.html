@@ -1,40 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<title>IGSN</title>
-</head>
-<body>
+	<head>
+		<title>IGSN</title>
+		<meta charset="utf-8">
+		<meta name="description" content="CSIRO IGSN">
+		<meta name="author" content="VT">
+		<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+				
+		<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+		<!-- Fonts -->
+		<link href="css/bootstrap.css" rel="stylesheet">
+		
+		<!-- replaced by cdn folder for offline working -->
+		<!-- link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,600,700,800,300' rel='stylesheet' type='text/css'>		
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+		-->
 
-<h1>Examples</h1>
-<h2>List all subnamespace</h2>
-<p>http://igsn.csiro.au/2.0/subnamespace/list/all</p>
+		<link rel='stylesheet' href='js/cdn/css/google_font.css' type='text/css'>
+		<link href="https://netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+		<link rel='stylesheet' href='js/cdn/css/jquery-ui.css' type='text/css'>
+		
+		
+		
+		<link rel="stylesheet" href="js/ng-animate/animate.css">
+		<link rel="stylesheet" type="text/css" href="css/theme.css">
+		<link rel="stylesheet" class="colors" href="css/blue.css">
+		
+		<!-- jquery -->
+		<!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script-->
+		
+		<script src="js/cdn/jquery.min.js"></script>
+		<script src="js/cdn/jquery-ui.js"></script>
+		
+		
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="js/bootstrap/bootstrap.min.js"></script>
+		
+		  <!-- angular-UI -->
+		<link rel="styleSheet" href="js/angular-ui/ui-grid/ui-grid-stable.css"/>
+		<script src="js/angular/angular.min.js"></script>
+		<script src="js/angular/angular-route.min.js"></script>	
+		<script src="js/angular-ui/ui-grid/ui-grid-stable.js"></script>
+		<script src="js/angular-ui/ui-bootstrap/ui-bootstrap-tpls-0.13.3.min.js"></script>
+		<script src="js/angular-ui/spinner/angular-spinners.min.js"></script>	
+		<script src="js/angular-ui/angular-map/angular-google-maps.min.js"></script>
+		<script src="js/angular-ui/angular-map/lodash.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>
+		
+		<!-- MISC -->
+		
+		
 
-<h2>Register new namespace</h2>
-<p>http://igsn.csiro.au/2.0/subnamespace/register/{prefix}</p>
+		   <!-- IGSN js -->
+		 <!-- Angular javascript -->	
+  		<script src="js/igsn/modules/app.js"></script>
+  		<script src="js/igsn/controllers/controllers.js"></script>
+		
+		
+		
+	</head>
 
-<h2>Get Metadata - igsn123</h2>
-<p>http://igsn.csiro.au/2.0/metadata/retrieve/{igsn}</p>
+	<!-- Header here -->
+	<body id="home" ng-app="app">
+		<div id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#home">
+						<img id="navlogo" src="img/logo.png" alt="microstore" width="52" height="52">
+					</a>
 
-<h2>Mint IGSN Test</h2>
-<p>http://igsn.csiro.au/2.0/igsn/test/mint - Samples.xsd</p>
+				</div>
+				<div class="collapse navbar-collapse">
+					<ul id="navigation" class="nav navbar-nav navbar-right text-center">
+						<li><a href="#browse">Browse</a></li>						
+						<li><a href="https://confluence.csiro.au/display/AusIGSN/Registry+User+Guide">Documentation</a></li>						
+					</ul>
+				</div>
 
-<h2>Mint IGSN Test</h2>
-<p>http://igsn.csiro.au/2.0/igsn/mint - Samples.xsd</p>
+			</div>
+		</div>
 
-<h2>Add Registrant</h2>
-<p><a href="registeruser.html">Add registrant</a></p>
+		<!-- Content here -->
+		 <div ng-view></div>
+		
 
-<h2>For more infomation</h2>
-<p>Visit <a href="https://confluence.csiro.au/display/AusIGSN/Registry+User+Guide">https://confluence.csiro.au/display/AusIGSN/Registry+User+Guide</a></p>
+	
 
-<h1>OAI-PMH</h1>
+		
 
-<h2>GetRecord</h2>
-<p>http://localhost:8080/CSIRO-IGSN/service/oai?verb=GetRecord&identifier=igsn:csiro:au:CSTEST4&metadataPrefix=cs_igsn</p>
-
-<h2>GetRecord</h2>
-<p>http://localhost:8080/CSIRO-IGSN/service/oai?verb=GetRecord&identifier=igsn:csiro:au:CSTEST4&metadataPrefix=cs_igsn</p>
-<p>http://localhost:8080/CSIRO-IGSN/service/oai?verb=GetRecord&identifier=igsn:csiro:au:CSTEST8&metadataPrefix=oai_dc</p>
-
-</body>
+		<footer id="main-footer" class="dark-bg light-typo">
+			<div class="container">
+				<div class="col-sm-1 col-xs-2"><img class="pull-left" src="img/igsn_logo.png" alt="igsn image" width="50" height="50"></div>				
+				<div class="col-sm-8 col-xs-7"><p class="pull-left copyright wow fadeInUp">http://www.igsn.org/ <br>Implemented by  <a href="http://csiro.au" target="_blank">CSIRO</a>.<br></p></div>
+				<div class="col-sm-3 col-xs-3"><img class="pull-right"  src="img/logo.png" alt="CSIRO Img" width="80" height="80"></div>
+			</div>
+		</footer>
+				
+	</body>
 </html>
