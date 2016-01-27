@@ -1,75 +1,133 @@
-<section class="padding-top-bottom">
+<section class="padding-top-bottom" ng-controller="browseCtrl">
 
 		<button ng-click="toggleFilter=true" ng-hide="toggleFilter" class="filter-expander">
             <i class="fa fa-search fa-lg white"></i>&nbsp; Search
          </button>
          <div class="filter-panel" ng-show="toggleFilter">
-		    <div class="panel-heading">
-		    <div class="row mb">		    
-	            <div class="col-sm-12">
-	              <h3 class="title-sm text-uppercase hr-left"><i class="fa fa-search fa-lg white"></i>&nbsp; Search	             
-		              <i ng-click="toggleFilter=false" class="pull-right pointer-cursor fa fa-close fa-lg white pointer"></i>             	          
-		           </h3>	
-	            </div>
-		     </div>	
-		    </div>
-		  	<div class="panel-body">
-		    	Panel content
-		  	</div>
+		    <div class="panel-heading row-heading">
+			    <div class="row mb">		    
+		            <div class="col-sm-12">
+		              <h3 class="title-sm text-uppercase hr-left"><i class="fa fa-search fa-lg white"></i>&nbsp; Search	             
+			              <i ng-click="toggleFilter=false" class="pull-right pointer-cursor fa fa-close fa-lg white pointer"></i>             	          
+			           </h3>	
+		            </div>
+			     </div>	
+			 </div>
+		
+	    	<div class="row mb">
+		        <div class="col-md-12">
+		          <div class="wrapper-form-box">
+		            <h3 class="title-sm">IGSN Search Form</h3>
+		            <form class="form-horizontal">
+		              <div class="form-group">			                
+		              	<label for="inputEmail" class="control-label col-sm-3">field1</label>
+		                  <div class="col-sm-9">
+							<input type="text" class="form-control" ng-model="form.project" placeholder="Project">						           					            						         
+		                  </div>			                  
+		              </div>
+		              <div class="form-group">			                
+		              	<label for="inputEmail" class="control-label col-sm-3">field2</label>
+		                  <div class="col-sm-9">
+							<select class="form-control" ng-model="form.staffIdFieldManager" ng-options="user.contactName as [user.contactName,user.organization].join(' - ') for user in users"></select>					           					            						         
+		                  </div>			                  
+		              </div>
+		              <div class="form-group">			                
+		              	<label for="inputEmail" class="control-label col-sm-3">field3</label>
+		                  <div class="col-sm-9">
+							<select class="form-control" ng-model="form.staffidResponsible" ng-options="staff.contactName as [staff.contactName,staff.organization].join(' - ') for staff in staffs"></select>						           					            						         
+		                  </div>			                  
+		              </div>
+		              <div class="form-group">			                
+		              	<label for="inputEmail" class="control-label col-sm-3">field4</label>
+		                  <div class="col-sm-9">
+							<input type="text"  class="form-control" placeholder="Project Publication" ng-model="form.projectPublication">													           					            						         
+		                  </div>			                  
+		              </div>
+		              <div class="form-group">	
+		              	<div class="col-sm-12">		                			              			                
+							<button type="submit" class="btn btn-primary text-theme-xs pull-right" ng-click="searchCollection(1)">Search</button>
+							<button class="btn btn-red text-theme-xs pull-left" ng-click="resetForm()">Reset Form</button>			
+						</div>		           					            						         			                		                 
+		              </div>			              	             			             
+		            </form>
+		          </div>
+		        </div>
+		      </div>
+		  
 		  </div>
 		  
 
 
 	<div class="container roundedCnrShadow">
-		<header class="section-header text-center">
+		<div class="section-header text-center">
 			<h2>IGSN Sample Collection</h2>
 			<p>Minted via CSIRO igsn registry service</p>
-			<table class="detailTbl">
-                <thead>
-                <tr>						                                
-                    <th>Sample</th>
-                    <th>&nbsp</th>						                                						                               
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr> 
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>
-                 <tr>
-                    <th>Collection Project</th>
-                    <td>tersadfs1</td>						                               
-                </tr>                 
-             </tbody>
-          </table>
-		</header>				
+			
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+			    <h3 class="panel-title"><b>List of Samples</b></h3>
+			  </div>
+			  <div class="panel-body">
+			    	<table class="detailTbl">
+		                <thead>
+		                <tr>						                                
+		                    <th>Sample</th>
+		                    <th>&nbsp</th>						                                						                               
+		                </tr>
+		                </thead>
+		                <tbody>
+		                <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr> 
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr>
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr>
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td><a ng-click="viewSample('test')">tersadfs1</a></td>						                               
+		                </tr>
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr>
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr>
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr>
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr>
+		                 <tr>
+		                    <th>Collection Project</th>
+		                    <td>tersadfs1</td>						                               
+		                </tr>                 
+		             </tbody>
+		          </table>
+		          
+		          <div class="row">
+		            <div class="col-sm-12">
+		              	<pagination ng-change="pageChanged()" total-items="totalItem" ng-model="currentPages" max-size="5" class="pagination-sm pull-left" boundary-links="true" rotate="false" num-pages="numPages"></pagination>		              
+		            </div>		            
+		          </div>
+		          <div class="row">
+		            <div class="col-sm-12">
+		              	<pre>Page: {{currentPages}} / {{numPages}}</pre>		              
+		            </div>		            
+		          </div>
+			  </div>
+			</div>
+	
+		</div>				
 	</div>
 </section>
