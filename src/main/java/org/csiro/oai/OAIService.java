@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class OAIService {
 	ObjectFactory oaiObjectFactory;
 	TokenResumptionService tokenResumptionService;
 	
-	SimpleDateFormat dateFormatterLong = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+	SimpleDateFormat dateFormatterLong = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	SimpleDateFormat dateFormatterShort = new SimpleDateFormat("yyyy-MM-dd");
 	
 	List<IGSNJAXBInterface> igsnJAXBInterface;
@@ -82,7 +83,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -108,7 +109,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();		
@@ -135,7 +136,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -161,7 +162,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -187,7 +188,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -213,7 +214,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -239,7 +240,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -261,8 +262,9 @@ public class OAIService {
 	public JAXBElement<OAIPMHtype> getIdentify() throws DatatypeConfigurationException {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
-		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		//VT:Set response Date	
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
+		
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -276,7 +278,7 @@ public class OAIService {
 		identifyType.setBaseURL(this.OAI_BASEURL_VALUE);
 		identifyType.setProtocolVersion("2.0");		
 		identifyType.getAdminEmail().add(this.OAI_ADMIN_EMAIL);
-		identifyType.setEarliestDatestamp("2015-11-01T12:00:00Z");
+		identifyType.setEarliestDatestamp("2015-11-01T00:00:00Z");		
 		identifyType.setGranularity(GranularityType.YYYY_MM_DD_THH_MM_SS_Z);
 		identifyType.setDeletedRecord(DeletedRecordType.PERSISTENT);
 		identifyType.getCompression().add("deflate");
@@ -302,7 +304,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -337,7 +339,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -390,7 +392,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
@@ -449,7 +451,7 @@ public class OAIService {
 		OAIPMHtype oaiType = oaiObjectFactory.createOAIPMHtype();
 		
 		//VT:Set response Date
-		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		oaiType.setResponseDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(dateFormatterLong.format(new Date())));
 		
 		//VT:Set Request Type
 		RequestType requestType = new RequestType();
