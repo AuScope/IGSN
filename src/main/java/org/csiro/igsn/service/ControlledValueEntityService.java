@@ -1,5 +1,7 @@
 package org.csiro.igsn.service;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
@@ -22,6 +24,21 @@ public class ControlledValueEntityService {
 			CvSamplingmethod result = em.createNamedQuery("CvSamplingmethod.search",CvSamplingmethod.class)
 		    .setParameter("methodidentifier", samplingMethod)
 		    .getSingleResult();			
+			 return result;
+		}catch(NoResultException e){							
+			return null;
+		}catch(Exception e){
+			throw e;
+		}finally{
+			em.close();
+		}
+	}
+	
+	public List<CvSampletype> getCvSampletype(){
+		EntityManager em = JPAEntityManager.createEntityManager();
+		try{			
+			List<CvSampletype> result = em.createNamedQuery("CvSampletype.getList",CvSampletype.class)
+		    .getResultList();			
 			 return result;
 		}catch(NoResultException e){							
 			return null;

@@ -1,4 +1,4 @@
-<section class="padding-top-bottom" ng-controller="browseCtrl">
+<section class="padding-top-bottom" ng-controller="browseCtrl" >
 
 		<button ng-click="toggleFilter=true" ng-hide="toggleFilter" class="filter-expander">
             <i class="fa fa-search fa-lg white"></i>&nbsp; Search
@@ -14,38 +14,34 @@
 			     </div>	
 			 </div>
 		
-	    	<div class="row mb">
+	    	<div class="row">
 		        <div class="col-md-12">
 		          <div class="wrapper-form-box">
 		            <h3 class="title-sm">IGSN Search Form</h3>
 		            <form class="form-horizontal">
 		              <div class="form-group">			                
-		              	<label for="inputEmail" class="control-label col-sm-3">field1</label>
+		              	<label class="control-label  col-sm-3">IGSN</label>
 		                  <div class="col-sm-9">
-							<input type="text" class="form-control" ng-model="form.project" placeholder="Project">						           					            						         
+							<input type="text" class="form-control" ng-model="form.igsn" placeholder="IGSN">						           					            						         
 		                  </div>			                  
 		              </div>
 		              <div class="form-group">			                
-		              	<label for="inputEmail" class="control-label col-sm-3">field2</label>
+		              	<label class="control-label col-sm-3">Type</label>
+		                  <div class="col-sm-9">
+							
+							<select class="form-control" ng-model="form.sampleType" ng-options="sampleType.sampletypeidentifier as sampleType.sampletypedefinition for sampleType in sampleTypes"></select>					           					            						         
+		                  </div>			                  
+		              </div>
+		              <!-- div class="form-group">			                
+		              	<label for="inputEmail" class="control-label col-sm-3">TYPE</label>
 		                  <div class="col-sm-9">
 							<select class="form-control" ng-model="form.staffIdFieldManager" ng-options="user.contactName as [user.contactName,user.organization].join(' - ') for user in users"></select>					           					            						         
 		                  </div>			                  
-		              </div>
-		              <div class="form-group">			                
-		              	<label for="inputEmail" class="control-label col-sm-3">field3</label>
-		                  <div class="col-sm-9">
-							<select class="form-control" ng-model="form.staffidResponsible" ng-options="staff.contactName as [staff.contactName,staff.organization].join(' - ') for staff in staffs"></select>						           					            						         
-		                  </div>			                  
-		              </div>
-		              <div class="form-group">			                
-		              	<label for="inputEmail" class="control-label col-sm-3">field4</label>
-		                  <div class="col-sm-9">
-							<input type="text"  class="form-control" placeholder="Project Publication" ng-model="form.projectPublication">													           					            						         
-		                  </div>			                  
-		              </div>
+		              </div-->
+		              
 		              <div class="form-group">	
 		              	<div class="col-sm-12">		                			              			                
-							<button type="submit" class="btn btn-primary text-theme-xs pull-right" ng-click="searchCollection(1)">Search</button>
+							<button type="submit" class="btn btn-primary text-theme-xs pull-right" ng-click="searchSample(1)">Search</button>
 							<button class="btn btn-red text-theme-xs pull-left" ng-click="resetForm()">Reset Form</button>			
 						</div>		           					            						         			                		                 
 		              </div>			              	             			             
@@ -71,47 +67,16 @@
 			    	<table class="detailTbl">
 		                <thead>
 		                <tr>						                                
-		                    <th>Sample</th>
-		                    <th>&nbsp</th>						                                						                               
+		                    <th>IGSN</th>
+		                    <th>Something else</th>						                                						                               
 		                </tr>
 		                </thead>
 		                <tbody>
-		                <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
+		                <tr ng-repeat="sample in samples">
+		                    <th><a ng-click="viewSample(sample.igsn)">{{sample.igsn}}</a></th>
+		                    <td>{{sample.igsn}}</td>						                               
 		                </tr> 
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
-		                </tr>
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
-		                </tr>
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td><a ng-click="viewSample('test')">tersadfs1</a></td>						                               
-		                </tr>
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
-		                </tr>
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
-		                </tr>
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
-		                </tr>
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
-		                </tr>
-		                 <tr>
-		                    <th>Collection Project</th>
-		                    <td>tersadfs1</td>						                               
-		                </tr>                 
+		                                 
 		             </tbody>
 		          </table>
 		          

@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ngRoute','allControllers','ngAnimate','ui.bootstrap']);
+var app = angular.module('app', ['ngRoute','allControllers','ngAnimate','ui.bootstrap','leaflet-directive']);
 
 app.config(['$routeProvider',
             function($routeProvider) {
@@ -66,6 +66,39 @@ app.service('modalService', ['$modal',function ($modal) {
         return $modal.open(tempModalDefaults).result;
     };
 
+}]);
+
+app.service('DropDownValueService', ['$q','$http',function($q,$http) {
+	
+    this.getSampleType = function() {
+    	return $q(function(resolve, reject) {
+    		$http.get('getSampleType.do')     
+    	     .success(function(data) {
+    	       resolve(data);       
+    	        
+    	     })
+    	     .error(function(data, status) {    	
+    	    	 reject(data,status);    	       
+    	     }) 
+   	 	},1000);
+    };
+    	    	    
+        
+   
+     
+ 
+//    this.getBoolean = function() {
+//            return [{
+//            	value:true, 
+//            	YesNo:'Yes'            	
+//            },{
+//            	value:false, 
+//            	YesNo:'No'           	
+//            }];
+//        };
+        
+  
+        
 }]);
 
 app.service('ViewSampleSummaryService',['$modal','$q','modalService',function ($modal,$q,modalService) {
