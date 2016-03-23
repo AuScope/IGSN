@@ -41,7 +41,7 @@ allControllers.controller('browseCtrl', ['$scope','$rootScope','$http','ViewSamp
 				sampleType:$scope.form.sampleType,
 				materialType:$scope.form.materialType,
 				pageNumber:page,
-				pageSize:10
+				pageSize:20
 				}
 		
 		//VT: Actual results

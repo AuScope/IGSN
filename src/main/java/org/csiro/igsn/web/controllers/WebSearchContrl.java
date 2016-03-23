@@ -48,7 +48,7 @@ public class WebSearchContrl {
             HttpServletResponse response) {
     	
     	try{
-    		List<Sample> results = webSearchService.search(igsn,sampleType,materialType,pageNumber,pageSize);
+    		List<Sample> results = webSearchService.search(igsn,sampleType,materialType,pageNumber,(pageSize > 30? 30:pageSize));
     		List<SampleSummaryResponse> responses= new ArrayList<SampleSummaryResponse>();
     		for(Sample s: results){
     			SampleSummaryResponse summaryResponse= new SampleSummaryResponse();
