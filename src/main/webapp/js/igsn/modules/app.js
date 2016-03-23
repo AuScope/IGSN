@@ -82,6 +82,19 @@ app.service('DropDownValueService', ['$q','$http',function($q,$http) {
     	     }) 
    	 	},1000);
     };
+    
+    this.getMaterialType = function() {
+    	return $q(function(resolve, reject) {
+    		$http.get('getMaterialType.do')     
+    	     .success(function(data) {
+    	       resolve(data);       
+    	        
+    	     })
+    	     .error(function(data, status) {    	
+    	    	 reject(data,status);    	       
+    	     }) 
+   	 	},1000);
+    };
     	    	    
         
    

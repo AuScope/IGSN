@@ -49,6 +49,21 @@ public class ControlledValueEntityService {
 		}
 	}
 	
+	public List<CvSamplematerial> getCvSamplematerial(){
+		EntityManager em = JPAEntityManager.createEntityManager();
+		try{			
+			List<CvSamplematerial> result = em.createNamedQuery("CvSamplematerial.getList",CvSamplematerial.class)
+		    .getResultList();			
+			 return result;
+		}catch(NoResultException e){							
+			return null;
+		}catch(Exception e){
+			throw e;
+		}finally{
+			em.close();
+		}
+	}
+	
 	public Registrant searchRegistrant(String user){
 		EntityManager em = JPAEntityManager.createEntityManager();
 		try{			

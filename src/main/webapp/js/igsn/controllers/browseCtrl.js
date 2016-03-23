@@ -21,6 +21,16 @@ allControllers.controller('browseCtrl', ['$scope','$rootScope','$http','ViewSamp
 		 });
 	});
     
+    DropDownValueService.getMaterialType()
+	.then(function(data) {
+		 $scope.materialTypes= data;
+	}, function(data, status) {
+		 modalService.showModal({}, {    	            	           
+	           headerText: "Error retrieve user list",
+	           bodyText: data
+		 });
+	});
+    
     $scope.totalItem = 0;
 	$scope.currentPages = 1;
     
@@ -29,6 +39,7 @@ allControllers.controller('browseCtrl', ['$scope','$rootScope','$http','ViewSamp
 		var params ={	
 				igsn: $scope.form.igsn,
 				sampleType:$scope.form.sampleType,
+				materialType:$scope.form.materialType,
 				pageNumber:page,
 				pageSize:10
 				}

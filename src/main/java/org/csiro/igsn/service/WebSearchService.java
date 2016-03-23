@@ -18,8 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WebSearchService {
 	
-	public List<Sample> search(String igsn, String type,
-			
+	public List<Sample> search(String igsn, String type,String materialType,			
 			Integer pageNumber, Integer pageSize) {
 		
 		EntityManager em = JPAEntityManager.createEntityManager();
@@ -42,10 +41,10 @@ public class WebSearchService {
 		from.fetch("cvSamplematerials",JoinType.LEFT);
 		
 					
-		List<Predicate> predicates =this.predicateBuilder(igsn,type, criteriaBuilder,from);
+		List<Predicate> predicates =this.predicateBuilder(igsn,type,materialType, criteriaBuilder,from);
 			
 		CriteriaQuery<Sample> select = criteriaQuery.select(from).where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
-		select = select.orderBy(criteriaBuilder.asc(from.get("sampleid")));
+		select = select.orderBy(criteriaBuilder.desc(from.get("modified")));
 		
 	
 		TypedQuery<Sample> typedQuery = em.createQuery(select);
@@ -62,7 +61,7 @@ public class WebSearchService {
 		return result;
 	}
 
-	public Long searchSampleCount( String igsn,String sampleType) {
+	public Long searchSampleCount( String igsn,String sampleType,String materialType) {
 		
 		EntityManager em = JPAEntityManager.createEntityManager();
 		
@@ -72,7 +71,7 @@ public class WebSearchService {
 		 Root<Sample> from = countQuery.from(Sample.class);
 		
 		
-		 List<Predicate> predicates =this.predicateBuilder(igsn,sampleType, criteriaBuilder,from);
+		 List<Predicate> predicates =this.predicateBuilder(igsn,sampleType,materialType, criteriaBuilder,from);
 
 		CriteriaQuery<Long> select = countQuery.select(criteriaBuilder.count(from)).where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
 	
@@ -82,7 +81,7 @@ public class WebSearchService {
 		return result;
 	}
 	
-	private List<Predicate> predicateBuilder(String igsn,String sampleType,CriteriaBuilder criteriaBuilder,Root<Sample> from){
+	private List<Predicate> predicateBuilder(String igsn,String sampleType,String materialType, CriteriaBuilder criteriaBuilder,Root<Sample> from){
 				
 		List<Predicate> predicates = new ArrayList<Predicate>();
 						
@@ -93,6 +92,10 @@ public class WebSearchService {
 		
 		if (sampleType != null && !sampleType.isEmpty()) {
 			predicates.add(criteriaBuilder.equal(from.join("cvSampletypes").get("sampletypeidentifier"), sampleType));
+		}
+		
+		if (materialType != null && !materialType.isEmpty()) {
+			predicates.add(criteriaBuilder.equal(from.join("cvSamplematerials").get("materialidentifier"), materialType));
 		}
 			
 		

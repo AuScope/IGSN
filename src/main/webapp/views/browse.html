@@ -26,10 +26,17 @@
 		                  </div>			                  
 		              </div>
 		              <div class="form-group">			                
-		              	<label class="control-label col-sm-3">Type</label>
+		              	<label class="control-label col-sm-3">Sample Type</label>
 		                  <div class="col-sm-9">
 							
 							<select class="form-control" ng-model="form.sampleType" ng-options="sampleType.sampletypeidentifier as sampleType.sampletypedefinition for sampleType in sampleTypes"></select>					           					            						         
+		                  </div>			                  
+		              </div>
+		               <div class="form-group">			                
+		              	<label class="control-label col-sm-3">Material Type</label>
+		                  <div class="col-sm-9">
+							
+							<select class="form-control" ng-model="form.materialType" ng-options="materialType.materialidentifier as materialType.materialdesc for materialType in materialTypes"></select>					           					            						         
 		                  </div>			                  
 		              </div>
 		              <!-- div class="form-group">			                
@@ -68,13 +75,17 @@
 		                <thead>
 		                <tr>						                                
 		                    <th>IGSN</th>
-		                    <th>Something else</th>						                                						                               
+		                    <th>Sample Name</th>
+		                    <th>Resource</th>
+							<th>Modified</th>		                    						                                						                               
 		                </tr>
 		                </thead>
 		                <tbody>
 		                <tr ng-repeat="sample in samples">
-		                    <th><a ng-click="viewSample(sample.igsn)">{{sample.igsn}}</a></th>
-		                    <td>{{sample.igsn}}</td>						                               
+		                    <th>{{sample.igsn}}</th>
+		                    <td>{{sample.name}}</td>
+		                    <td><a href="{{sample.landingPage}}">{{sample.landingPage}}</a></td>
+		                    <td>{{sample.logTimeStamp}}</td>						                               
 		                </tr> 
 		                                 
 		             </tbody>

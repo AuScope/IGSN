@@ -25,6 +25,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 	@NamedQuery(
 			name="CvSamplematerial.searchByMaterialidentifier",
 		    query="SELECT r FROM CvSamplematerial r where r.materialidentifier = :materialidentifier"
+	),
+	@NamedQuery(
+			name="CvSamplematerial.getList",
+		    query="SELECT r FROM CvSamplematerial r"
 	)
 })	
 public class CvSamplematerial implements java.io.Serializable {
