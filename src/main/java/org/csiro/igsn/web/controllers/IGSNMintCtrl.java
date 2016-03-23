@@ -123,7 +123,7 @@ public class IGSNMintCtrl {
 				// =============================
 		String usr = null;
 		List<MintEventLog> mintEventLogs = new ArrayList<MintEventLog>();
-		boolean containsError=false;
+		
 		if (isXMLValid) {						
 			usr = user.getName();
 			Set<Prefix> allowedPrefix = prefixEntityService.searchByUser(usr);			
@@ -139,7 +139,7 @@ public class IGSNMintCtrl {
 						}catch(Exception e){
 							mintEventLog.setMintLog(MintErrorCode.MINT_FAILURE, e.getMessage());
 							mintEventLogs.add(mintEventLog);
-							containsError=true;
+							
 							continue;
 						}
 					}
@@ -162,27 +162,25 @@ public class IGSNMintCtrl {
 						if(e instanceof javax.persistence.PersistenceException && e.getCause().getCause().getMessage().contains("duplicate key value")){
 							mintEventLog.setDatabaseLog(DatabaseErrorCode.DUPLICATE_KEY, e.getMessage());
 							mintEventLogs.add(mintEventLog);
-							containsError=true;
+							
 						}else{
 							mintEventLog.setDatabaseLog(DatabaseErrorCode.UPDATE_ERROR, e.getMessage());
 							mintEventLogs.add(mintEventLog);
-							containsError=true;
+							
 						}
 						
 					}											
 					
 				}else{
 					mintEventLog.setMintLog(MintErrorCode.PREFIX_UNREGISTERED, "The prefix is not registered to the user:" + user.getName());
-					containsError=true;
+					
 				}
 			}
 			
 		}
-		if(containsError){
-			return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.BAD_REQUEST);
-		}else{
-			return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.OK);
-		}
+		
+		return new ResponseEntity<List<MintEventLog>>(mintEventLogs,HttpStatus.OK);
+		
 		
 
 	

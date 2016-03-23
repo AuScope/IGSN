@@ -441,7 +441,7 @@ public class Sample implements java.io.Serializable {
 		this.cvSamplematerials = cvSamplematerials;
 	}
 	
-	@Column(name = "elevation_units", length = 30)
+	@Column(name = "elevation_units", length = 100)
 	public String getElevationUnits() {
 		return this.elevationUnits;
 	}
