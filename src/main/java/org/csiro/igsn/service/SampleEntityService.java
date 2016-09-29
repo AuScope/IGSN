@@ -171,6 +171,22 @@ public class SampleEntityService {
 			em.close();	
 		}
 	}
+	
+	public Sample searchPublicSampleByIGSN(String igsn){
+		EntityManager em = JPAEntityManager.createEntityManager();
+		try{			
+			Sample result = em.createNamedQuery("Sample.searchpublic",Sample.class)
+		    .setParameter("igsn", igsn)
+		    .getSingleResult();			 		
+			 return result;
+		}catch(NoResultException e){
+			return null;
+		}catch(Exception e){
+			throw e;
+		}finally{
+			em.close();	
+		}
+	}
 
 
 	public void insertSample(org.csiro.igsn.bindings.allocation2_0.Samples.Sample sampleXml,String user) throws Exception {
@@ -247,10 +263,18 @@ public class SampleEntityService {
 		if(sampleXml.getSamplingLocation().isNil()){
 			sampleEntity.setSamplinglocNilreason(sampleXml.getSamplingLocation().getValue().getNilReason());
 		}else{
-			String samplingLocationStrPoint = sampleXml.getSamplingLocation().getValue().getWkt().getValue();
-			Geometry samplinglocgeom = SpatialUtilities.wktToGeometry(samplingLocationStrPoint);		
-			sampleEntity.setSamplinglocgeom(samplinglocgeom);
-			sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getValue().getWkt().getSrs());
+			
+			if(sampleXml.getSamplingLocation().getValue().getWkt()!=null){
+				String samplingLocationStrPoint = sampleXml.getSamplingLocation().getValue().getWkt().getValue();
+				Geometry samplinglocgeom = SpatialUtilities.wktToGeometry(samplingLocationStrPoint);		
+				sampleEntity.setSamplinglocgeom(samplinglocgeom);
+				sampleEntity.setSamplinglocsrs(sampleXml.getSamplingLocation().getValue().getWkt().getSrs());
+			}else{
+				sampleEntity.setSamplinglocgeom(null);
+				sampleEntity.setSamplinglocsrs(null);
+			}
+			
+		
 			
 			if(sampleXml.getSamplingLocation().getValue().getElevation()!=null){
 				sampleEntity.setElevation(sampleXml.getSamplingLocation().getValue().getElevation().getValue());

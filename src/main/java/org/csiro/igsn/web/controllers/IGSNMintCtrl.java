@@ -137,9 +137,9 @@ public class IGSNMintCtrl {
 							mintEventLog.setMintLog(MintErrorCode.MINT_SUCCESS, null);
 							mintEventLog.setHandle("http://hdl.handle.net/"+igsn);							
 						}catch(Exception e){
-							mintEventLog.setMintLog(MintErrorCode.MINT_FAILURE, e.getMessage());
+							mintEventLog.setMintLog(MintErrorCode.MINT_FAILURE, e.getMessage());							
+							mintEventLog.setDatabaseLog(DatabaseErrorCode.NOT_ATTEMPTED, "");
 							mintEventLogs.add(mintEventLog);
-							
 							continue;
 						}
 					}
@@ -173,7 +173,8 @@ public class IGSNMintCtrl {
 					
 				}else{
 					mintEventLog.setMintLog(MintErrorCode.PREFIX_UNREGISTERED, "The prefix is not registered to the user:" + user.getName());
-					
+					mintEventLog.setDatabaseLog(DatabaseErrorCode.NOT_ATTEMPTED, "");
+					mintEventLogs.add(mintEventLog);
 				}
 			}
 			

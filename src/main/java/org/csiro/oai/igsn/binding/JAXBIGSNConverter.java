@@ -267,10 +267,9 @@ public class JAXBIGSNConverter implements IGSNJAXBInterface{
 			wkt.setSpatialType(getSpatialTypeFromGeometry(sampleEntity.getSamplinglocgeom()));
 			if(sampleEntity.getSamplinglocgeom()!=null){
 				wkt.setValue(sampleEntity.getSamplinglocgeom().toText());
-			}else{
-				wkt.setValue("Null");
+				samplingLocation.setWkt(wkt);
 			}
-			samplingLocation.setWkt(wkt);
+	
 		}else{
 			samplingLocation.setNilReason(sampleEntity.getSamplinglocNilreason());
 			samplingLocationJAXBElement.setNil(true);

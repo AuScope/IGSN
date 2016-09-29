@@ -47,6 +47,10 @@ import com.vividsolutions.jts.geom.Geometry;
 	@NamedQuery(
 			name="Sample.search",
 		    query="SELECT s FROM Sample s where s.igsn = :igsn"
+	),
+	@NamedQuery(
+			name="Sample.searchpublic",
+		    query="SELECT s FROM Sample s where s.ispublic = true and s.igsn = :igsn"
 	)
 })	
 public class Sample implements java.io.Serializable {

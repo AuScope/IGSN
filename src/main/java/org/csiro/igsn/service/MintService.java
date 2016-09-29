@@ -27,7 +27,8 @@ public class MintService {
 	
 	private  final static Charset DEFAULT_ENCODING = Charset.forName("UTF8");
 	
-	private final String IGSN_TEST_PREFIX ="10273/TEST/";
+	//private final String IGSN_TEST_PREFIX ="10273/TEST/";
+	private final String IGSN_TEST_PREFIX ="20.500.11812/";
 	
 	@Value("#{configProperties['IGSN_REGISTRY_URL']}")
 	private String IGSN_REGISTRY_URL;

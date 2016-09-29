@@ -66,7 +66,7 @@ public class OAIPMHCtrl {
 				marshalToWrtier(oaiService.getBadArgument(VerbType.GET_RECORD),response.getWriter(),OAIPMHtype.class);
 				return;
 			}
-			Sample sample = sampleEntityService.searchSampleByIGSN(identifier.replace(OAI_CSIRO_IDENTIFIER_PREFIX, ""));			
+			Sample sample = sampleEntityService.searchPublicSampleByIGSN(identifier.replace(OAI_CSIRO_IDENTIFIER_PREFIX, ""));			
 			marshalToWrtier(oaiService.getRecordOAI(sample, metadataPrefix),response.getWriter(),OAIPMHtype.class,oaiService.getSuitableConverter(metadataPrefix).getXMLRootClass());
 		}else if(verb.equals(VerbType.LIST_RECORDS.value())){
 			

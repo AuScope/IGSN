@@ -4,6 +4,7 @@ public enum DatabaseErrorCode {
 		
 	UPDATE_ERROR(103),
 	DUPLICATE_KEY(104),
+	NOT_ATTEMPTED(105),
 	UPDATE_SUCCESS(200);
 	
 	
@@ -28,7 +29,9 @@ public enum DatabaseErrorCode {
 		 	case 103: message="Error updating the database, please try again later.";
 		 		break;
 		 	case 104: message="Duplicate key. Please use updated instead of submitted";
-	 			break;	
+	 			break;
+		 	case 105: message="Database update not attempted";
+ 				break;		
 		 	case 200: message="Database successfully updated.";
 	 			break;			 	
 			default: message="Error not capture, please send a sample of your file to cg-admin@csiro.au";	
