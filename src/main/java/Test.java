@@ -1,61 +1,67 @@
-package org.csiro.igsn.service;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Query;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.log4j.Logger;
-import org.csiro.igsn.web.controllers.IGSNMintCtrl;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.csiro.igsn.service.JPAEntityManager;
 
-@Service
-public class MintService {
-	final Logger log = Logger.getLogger(IGSNMintCtrl.class);
+public class Test{
 	
-	private  final static Charset DEFAULT_ENCODING = Charset.forName("UTF8");
 	
-	//private final String IGSN_TEST_PREFIX ="10273/TEST/";
-	private final String IGSN_TEST_PREFIX ="20.500.11812/";
-	
-	@Value("#{configProperties['IGSN_REGISTRY_URL']}")
-	private String IGSN_REGISTRY_URL;
+	public static void main(String [] args){
+		EntityManager em = JPAEntityManager.createEntityManager();
+		SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssXXX");
+		try{
+			Test t = new Test();
 
-	@Value("#{configProperties['IGSN_PREFIX']}")
-	private String IGSN_PREFIX;
+			Query q = em.createNativeQuery("SELECT a.metadataupdated, a.landingpage, a.igsn FROM Sample a where a.metadataupdated=false");
+			List<Object[]> samples = q.getResultList();
+			
+			for(Object [] sample:samples){
+				t.createRegistryXML(sample[2].toString(), (String)sample[1], sdf.format(new Date()), false, "submitted");
+				
+				EntityTransaction et = em.getTransaction();
+				et.begin();
+				em.createNativeQuery("update Sample set metadataupdated=true where igsn=?")
+				.setParameter(1, sample[2].toString())
+				.executeUpdate();
+				et.commit();
+			}
+			
+				
+			
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			em.close();	
+		}
+	}
 	
-	@Value("#{configProperties['IGSN_REGISTRY_USER']}")
-	private String IGSN_USER;
+
 	
-	@Value("#{configProperties['IGSN_REGISTRY_PASSWORD']}")
-	private String IGSN_PASSWORD;
 	
-	/**
-	 * 
-	 * @param sampleNumber
-	 * @param landingPage
-	 * @param timeStamp
-	 * @param testMode
-	 * @param event
-	 * @return - the IGSN Number minted.
-	 * @throws Exception
-	 */
 	public String createRegistryXML(String sampleNumber, String landingPage, String timeStamp, boolean testMode,
 			String event) throws Exception {
 			
-		String IGSNPrefix = testMode?IGSN_TEST_PREFIX:IGSN_PREFIX;
+		String IGSNPrefix = "10273/";
+		String IGSN_REGISTRY_URL = "https://doidb.wdc-terra.org/igsn/";
 		
 		String metacontent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 		metacontent += "<sample xmlns=\"http://igsn.org/schema/kernel-v.1.0\" "
@@ -67,35 +73,29 @@ public class MintService {
 		metacontent += "<log><logElement event=\"" + event + "\" timeStamp=\"" + timeStamp + "\"/></log></sample>";
 		
 		
-		ByteArrayOutputStream retbody = null;
+		ByteArrayOutputStream retbody = new ByteArrayOutputStream();
 		try {
 			
-			String mintcontent = "igsn=" + IGSNPrefix + sampleNumber;
-			mintcontent += "\n";
-			mintcontent += "url=" + landingPage;
-			retbody = new ByteArrayOutputStream();
-			int responseCode = 0;
-			if (testMode) {
-				responseCode = httpRequest(IGSN_REGISTRY_URL + "igsn", mintcontent.getBytes(), retbody, "POST","text/plain;charset=UTF-8");
-			} else {
-				responseCode = httpRequest(IGSN_REGISTRY_URL + "igsn", mintcontent.getBytes(), retbody, "POST","text/plain;charset=UTF-8");
-			}
 			
-			if(responseCode == 201){
-				responseCode = httpRequest(IGSN_REGISTRY_URL + "metadata/" + IGSNPrefix + sampleNumber , metacontent.getBytes(), retbody, "POST","application/xml;charset=UTF-8");
-			}
+			int responseCode = httpRequest(IGSN_REGISTRY_URL + "metadata/" + IGSNPrefix + sampleNumber , metacontent.getBytes(), retbody, "POST");
+			
+			
+			
 			if(responseCode != 201){
 				throw new Exception("Minting unsuccessful:" + retbody.toString());
 			}
-		} catch (Exception e) {
-			log.info("Error: " + e.getMessage());
+		} catch (Exception e) {			
 			e.printStackTrace();
 			throw e;
 		}
 		return IGSNPrefix + sampleNumber;
 	}
 	
-	private int httpRequest(String serviceurl, byte[] body, OutputStream retbody, String method,String format)
+	
+	
+	
+	
+	private int httpRequest(String serviceurl, byte[] body, OutputStream retbody, String method)
 			throws Exception {
 		URL url;
 		HttpsURLConnection con;
@@ -132,7 +132,7 @@ public class MintService {
 			throw new Exception(e.getMessage());
 		}
 
-		prepareTransmission(con, body,format);
+		prepareTransmission(con, body);
 		try {
 			con.connect();
 		} catch (IOException e) {
@@ -154,12 +154,12 @@ public class MintService {
 		}
 	}
 	
-	private void prepareTransmission(HttpsURLConnection con, byte[] body, String format) throws Exception {
+	private void prepareTransmission(HttpsURLConnection con, byte[] body) throws Exception {
 		try {
-			String igsnuser = IGSN_USER + ":" + IGSN_PASSWORD;
+			String igsnuser ="CSIRO.CSIRO:EpsVp5eZ";
 			con.setRequestProperty("Authorization",
 					"Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(igsnuser.getBytes()));
-			con.setRequestProperty("Content-Type", format);
+			con.setRequestProperty("Content-Type", "application/xml;charset=UTF-8");
 			if (body.length > 0) {
 				con.setDoOutput(true);
 				OutputStream out = con.getOutputStream();
@@ -171,7 +171,4 @@ public class MintService {
 		}
 
 	}
-	
-
-
 }
