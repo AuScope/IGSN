@@ -133,7 +133,8 @@ public class IGSNMintCtrl {
 				if(sampleStartsWithAllowedPrefix(allowedPrefix,s)){		
 					if(s.getLogElement().getEvent().equals(EventType.SUBMITTED)||s.getLogElement().getEvent().equals(EventType.UPDATED)){
 						try{
-							String igsn=this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), sdf.format(new Date()), test, s.getLogElement().getEvent().value());							
+							SimpleDateFormat metadataDateFormat = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssXXX");
+							String igsn=this.mintService.createRegistryXML(s.getSampleNumber().getValue(), s.getLandingPage(), metadataDateFormat.format(new Date()), test, s.getLogElement().getEvent().value());							
 							mintEventLog.setMintLog(MintErrorCode.MINT_SUCCESS, null);
 							mintEventLog.setHandle("http://hdl.handle.net/"+igsn);							
 						}catch(Exception e){
