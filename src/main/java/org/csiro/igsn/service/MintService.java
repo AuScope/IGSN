@@ -78,11 +78,11 @@ public class MintService {
 			if (testMode) {
 				responseCode = httpRequest(IGSN_REGISTRY_URL + "igsn", mintcontent.getBytes(), retbody, "POST","text/plain;charset=UTF-8");
 			} else {
+				//VT: in non test mode, we will want to mint the metadata as well.
 				responseCode = httpRequest(IGSN_REGISTRY_URL + "igsn", mintcontent.getBytes(), retbody, "POST","text/plain;charset=UTF-8");
-			}
-			
-			if(responseCode == 201){
-				responseCode = httpRequest(IGSN_REGISTRY_URL + "metadata/" + IGSNPrefix + sampleNumber , metacontent.getBytes(), retbody, "POST","application/xml;charset=UTF-8");
+				if(responseCode == 201){
+					responseCode = httpRequest(IGSN_REGISTRY_URL + "metadata/" + IGSNPrefix + sampleNumber , metacontent.getBytes(), retbody, "POST","application/xml;charset=UTF-8");
+				}
 			}
 			if(responseCode != 201){
 				throw new Exception("Minting unsuccessful:" + retbody.toString());
