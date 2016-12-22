@@ -17,6 +17,26 @@ Project Clean + build
 make sure your eclipse is running on java 8 as well. For more tips and tricks visit 
 https://twiki.auscope.org/wiki/Grid/AuscopePortalDevelopmentEnvironmentSetUp26022010
 
+
+include  src/main/resources/config.properties with the following:
+````
+ldap.password=xxxxx
+ldap.url=ldap://pool.ldap.example.au:123
+ldap.userdn=CN=sa-xxxxx,OU=ffffffff,OU=Special Accounts,DC=eeeee,DC=jjjjjo,DC=au
+
+IGSN_REGISTRY_URL=https\://doidb.wdc-terra.org/igsn/
+IGSN_CSIRO_XSD_URL=https://igsn.csiro.au/schemas/2.0/igsn-csiro-v2.0.xsd
+IGSN_PREFIX=12334/
+IGSN_REGISTRY_USER=username
+IGSN_REGISTRY_PASSWORD=password
+IGSN_HANDLE_PREFIX=http://hdl.handle.net/12334/
+
+OAI_BASEURL_VALUE=http://igsn.csiro.au/oai
+OAI_CSIRO_IDENTIFIER_PREFIX=igsn:csiro:au:
+OAI_REPO_NAME = CSIRO igsn repository
+OAI_ADMIN_EMAIL = examplel@csiro.au
+```
+
 include  src/main/resources/hibernate.cfg.xml for development
 ```
 <?xml version="1.0" encoding="UTF-8"?>
